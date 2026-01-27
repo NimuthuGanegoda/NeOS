@@ -1,6 +1,6 @@
 # NeOS
 
-NeOS is the home for the project source, documentation, and tooling. This repository currently provides the foundational documentation and policies so contributors have a clear starting point while the codebase is assembled.
+NeOS is the home for the project source, documentation, and tooling. This repository is currently a scaffold so new contributors have a clear starting point while the codebase is assembled.
 
 ## Getting started
 
@@ -20,28 +20,21 @@ cd NeOS
 
 ```
 .
-├── README.md         # Project overview and setup instructions
-├── LICENSE           # Project license
-├── .gitignore        # Ignored files and directories
-├── CHANGELOG.md      # Release notes and history
-├── CONTRIBUTING.md   # Contribution guidelines
-├── CODE_OF_CONDUCT.md# Community standards
-└── SECURITY.md       # Vulnerability reporting policy
+├── README.md        # Project overview and setup instructions
+├── LICENSE          # Project license
+└── .gitignore       # Ignored files and directories
 ```
 
 ## Development workflow
 
 1. Create a feature branch from `main`.
-2. Keep changes focused and update documentation with behavior changes.
-3. Run any relevant checks for the area you touched (to be expanded as the project grows).
-4. Open a pull request summarizing the changes and tests.
+2. Make your changes and keep documentation up to date.
+3. Run any relevant tests or checks (to be documented as the project grows).
+4. Open a pull request summarizing the changes.
 
-## Project policies
+## Contributing
 
-- [Contributing guidelines](CONTRIBUTING.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Security policy](SECURITY.md)
-- [Changelog](CHANGELOG.md)
+If you want to propose changes, please open an issue or submit a pull request. More detailed contribution guidelines will be added as the project matures.
 
 ## License
 
