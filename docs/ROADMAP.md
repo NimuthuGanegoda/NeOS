@@ -1,17 +1,17 @@
 # NeOS Development Roadmap
 
 ## Scope and Philosophy
-NeOS is a curated rolling-release, Arch-based desktop OS targeting stability through predictable behavior and staged updates. The roadmap focuses on build reliability, user experience parity with Windows, and maintainable long-term operations.
+NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable behavior through staged updates and QA validation. The roadmap prioritizes a Windows-familiar KDE Plasma experience, low-friction onboarding, and sustainable long-term maintenance, with snapshot-based repo releases to keep the system coherent.
 
 ## Phase 0: Foundation and Planning
 **Goals**
 - Establish project standards, repository structure, and contributor documentation.
-- Define build pipeline requirements and QA expectations.
+- Define build pipeline requirements, QA expectations, and release cadence.
 
 **Key Deliverables**
-- Project conventions (coding style, packaging policy, release cadence).
-- CI/CD plan for repo builds and ISO generation.
-- Baseline KDE Plasma configuration and UX principles.
+- Packaging and repo policies (what lives in Arch vs NeOS repos, snapshot cadence, and promotion gates).
+- CI/CD plan for repo builds, ISO generation, and update promotion.
+- Baseline KDE Plasma configuration and UX principles (Wayland-first, Windows-like defaults).
 
 ## Phase 1: Build System and ISO Creation
 **Goals**
@@ -20,12 +20,14 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting stability thr
 
 **Workstreams**
 1. **Build system**
-   - Use Arch ISO build tooling (e.g., `archiso`) as a base.
+   - Use Arch ISO tooling (`archiso`) as the base.
    - Create a dedicated NeOS profile with custom packages and configs.
    - Automate ISO builds via CI for nightly and release candidates.
 2. **Base image defaults**
-   - Preconfigure KDE Plasma defaults.
-   - Integrate Calamares with NeOS branding and default options.
+   - Preconfigure KDE Plasma defaults (layout, theming, wallpapers) with `neos-artwork` and `neos-settings`.
+   - Integrate Calamares with NeOS branding and default options (Replace Windows / Dual Boot paths).
+   - Use Btrfs by default with snapshot-ready subvolumes.
+   - Standardize on GRUB for Windows-friendly dual boot.
    - Add default apps (Brave, VLC, nomacs, Thunderbird, LibreOffice).
 
 **Acceptance Criteria**
@@ -35,16 +37,18 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting stability thr
 ## Phase 2: Repository and Update Strategy
 **Goals**
 - Define a reliable staging pipeline and update channel strategy.
+- Keep KDE/Qt/drivers stable without freezing Arch updates.
 
 **Workstreams**
 1. **Repository topology**
-   - Mirror Arch repos.
-   - Create NeOS-curated repos for KDE, Qt, drivers, and firmware.
+   - Snapshot Arch official repos for coherent release sets.
+   - Create NeOS-curated repos for KDE, Qt, drivers, firmware, and key desktop utilities.
+   - Maintain a staging repo for pre-release validation.
 2. **Update gates**
    - Automated smoke testing for KDE/Qt updates.
-   - Manual QA for desktop-critical changes.
+   - Manual QA for desktop-critical changes and driver bumps.
 3. **Release process**
-   - Staged rollout: *staging → stable*.
+   - Staged rollout: *staging → stable* using validated snapshots.
    - Keep rollback packages for critical components.
 
 **Acceptance Criteria**
@@ -58,11 +62,12 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting stability thr
 **Workstreams**
 1. **Calamares customization**
    - Streamline the installer with sensible defaults.
+   - Provide Replace Windows / Dual Boot flows.
    - Optional advanced mode for partitioning and custom packages.
 2. **First-boot wizard**
-   - Offer post-install updates.
+   - Offer post-install updates on first boot.
    - Run driver detection and firmware installation.
-   - Provide privacy and telemetry options.
+   - Provide privacy and telemetry opt-in controls.
 
 **Acceptance Criteria**
 - Installer feels consistent and branded.
@@ -74,12 +79,13 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting stability thr
 
 **Workstreams**
 1. **Driver automation**
-   - Detect Nvidia GPUs and install proprietary drivers.
+   - Detect Nvidia GPUs and install proprietary drivers automatically.
+   - Treat `nvidia-dkms` availability as a first-boot requirement.
    - Integrate dkms module handling for kernel updates.
 2. **Firmware coverage**
    - Curate Wi-Fi and laptop firmware packages in NeOS repos.
 3. **Hardware quirks**
-   - Default power profiles and known quirks presets.
+   - Default power profiles and known-quirk presets for common laptops.
 
 **Acceptance Criteria**
 - Nvidia users boot to working graphics by default.
@@ -92,8 +98,9 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting stability thr
 **Workstreams**
 1. **System hardening**
    - Adopt secure kernel/sysctl defaults where practical.
+   - Provide optional `linux-lts` fallback for stability-sensitive hardware.
 2. **App sandboxing**
-   - Prefer Flatpak for GUI apps when possible.
+   - Prefer Flatpak for GUI apps where appropriate.
    - Ensure KDE portals are correctly configured.
 3. **Policy documentation**
    - Clear guidelines for app confinement and exceptions.
@@ -108,10 +115,10 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting stability thr
 
 **Workstreams**
 1. **UI layout**
-   - Ship a taskbar and launcher layout similar to Windows expectations.
-   - Adjust default shortcuts to avoid surprises.
+   - Ship a taskbar and launcher layout aligned with Windows expectations.
+   - Adjust default shortcuts to reduce surprises.
 2. **Theme and branding**
-   - Consistent default theme, iconography, and boot visuals.
+   - Consistent default theme, iconography, boot visuals, and welcome app.
 3. **App defaults**
    - Set sensible default applications and file associations.
 
@@ -119,16 +126,36 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting stability thr
 - Users can navigate without learning KDE conventions from scratch.
 - Visual consistency across desktop and bundled apps.
 
-## Phase 7: Long-Term Maintenance and Distribution
+## Phase 7: App Store and Package Management UX
 **Goals**
-- Sustain NeOS as a publicly distributed OS.
+- Ensure day-to-day software management does not require terminal usage.
+
+**Workstreams**
+1. **Discover integration**
+   - Brand KDE Discover for NeOS and set it as the default app store.
+   - Validate PackageKit/libalpm backend behavior for updates and installations.
+   - Enable Flatpak + Flathub by default for GUI app installs.
+2. **Optional advanced tooling**
+   - If AUR access is desired, ship pamac as an opt-in advanced tool (not default).
+   - Document that AUR usage is unsupported and best-effort only.
+3. **Update UX**
+   - Surface clear update notes for desktop-critical changes.
+
+**Acceptance Criteria**
+- Users can install and update apps without terminal commands.
+- Discover handles system updates reliably.
+
+## Phase 8: Long-Term Maintenance and Distribution
+**Goals**
+- Sustain NeOS as a publicly distributed OS with predictable operations.
 
 **Workstreams**
 1. **Release operations**
    - Define stable and testing channels.
-   - Document how updates are promoted.
+   - Document how updates are promoted from snapshots.
 2. **Support and feedback**
    - Issue tracking and community support channels.
+   - Optional, telemetry-free crash reporting with explicit opt-in.
 3. **Legal and licensing**
    - Compliance with upstream licenses and redistribution rules.
 
@@ -137,11 +164,12 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting stability thr
 - Clear governance and contributor workflows.
 
 ## Best-Practice Recommendations (Windows Familiarity + KDE Idioms)
-- **Discover as the app store:** Keep Discover as the primary software hub to avoid fragmenting the user experience.
+- **Discover as the app store:** Keep Discover as the primary software hub to avoid fragmentation.
 - **Minimal tray noise:** Curate background services and notifications by default.
 - **Familiar shortcuts:** Provide Windows-like keybindings while documenting KDE equivalents.
 - **File manager defaults:** Configure Dolphin for a clean, no-surprise layout.
 - **Settings clarity:** Group system settings to avoid decision fatigue.
+- **Snapshot rollback UX:** Provide a GUI-friendly rollback path for Btrfs snapshots.
 
 ## Risks and Pitfalls (Arch-Based Distribution)
 - **Upstream breakage:** Arch updates can break KDE or drivers unexpectedly.
