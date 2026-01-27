@@ -1,11 +1,11 @@
 # NeOS Architecture
 
 ## Overview
-NeOS (Next Evolution Operating System) is a curated Arch Linux desktop distribution targeting x86-64 hardware with a KDE Plasma desktop designed to be a drop-in replacement for Windows or other graphical OSes. NeOS is a distribution with clear opinions rather than a thin Arch remix. The architecture prioritizes polish, predictability, and Windows familiarity over Arch purity, with a staged rolling-release model to protect end users from regressions.
+NeOS (Next Evolution Operating System) is an Arch Linux–based desktop OS targeting x86-64 hardware with a KDE Plasma desktop curated to be a drop-in replacement for Windows or other graphical OSes. The architecture prioritizes a polished, predictable end-user experience while preserving Arch’s rolling-release benefits through staged, curated updates.
 
 ## Architecture Goals
 - **Windows-familiar UX without sacrificing KDE idioms:** Clean defaults, modern Plasma features enabled, minimal visual clutter.
-- **Predictable rolling release:** Snapshot, test, and ship coherent repo sets for desktop-critical updates.
+- **Predictable rolling release:** Use upstream Arch repositories where possible while gating desktop-critical updates through NeOS staging.
 - **Out-of-the-box hardware support:** Seamless handling of Nvidia GPUs, Wi-Fi firmware, and common laptop quirks.
 - **No terminal dependency for daily use:** First-class GUI tooling for updates, apps, and configuration.
 - **Maintainable operations:** Clear repository boundaries, automated validation, and rollback-ready packages.
@@ -18,15 +18,10 @@ NeOS (Next Evolution Operating System) is a curated Arch Linux desktop distribut
   - **Arch official repos:** baseline system packages and non-desktop-critical updates.
   - **NeOS curated repos:** KDE Plasma, KDE Frameworks, Qt stack, graphics drivers, firmware, and desktop-critical utilities.
   - **NeOS staging repo:** pre-release validation channel for gated updates.
-- **Default filesystem:** Btrfs with snapshots treated as a stability feature (not an advanced option).
-- **Bootloader:** GRUB for reliable Windows dual-boot support.
 
 ### 2) Desktop Environment (KDE Plasma)
-- **Plasma version:** KDE Plasma 6, curated to be KDE Neon–like in clarity and polish.
-- **Session model:** Wayland-first with X11 fallback only where required (notably Nvidia).
-- **Visual design:** Clean layout, modern theme, minimal clutter, and reduced default KDE noise.
-- **Feature defaults:** Portal integration, per-app scaling, and tray hygiene.
-- **Branding:** `neos-artwork` and `neos-settings` provide coherent theming, defaults, and identity.
+- **Visual design:** KDE Neon–like defaults (clean layout, modern theme, minimal clutter).
+- **Feature defaults:** Wayland readiness, portal integration, per-app scaling, and tray hygiene.
 - **KDE app cohesion:** Dolphin, Konsole, System Settings, and Discover are themed consistently for a single-system feel.
 
 ### 3) Core Applications (User-Removable)
@@ -40,20 +35,17 @@ These applications are preinstalled but user-removable; NeOS does not claim redi
 
 ### 4) Installer and First-Boot Flow
 - **Installer:** Calamares with NeOS branding and a streamlined path for typical users.
-- **Flow:** Windows-like steps with sensible defaults, explicit Replace Windows / Dual Boot paths, and an optional advanced mode for storage and customization.
-- **Storage defaults:** Automatic partitioning with Btrfs subvolumes and snapshot-ready layout.
+- **Flow:** Windows-like steps with sensible defaults and optional advanced mode for storage and customization.
 - **First boot:** A guided welcome flow for updates, driver checks, firmware enablement, and optional telemetry opt-in.
 
 ### 5) Hardware Enablement
-- **Nvidia GPUs:** Automatic detection and installation of proprietary drivers (including `nvidia-dkms`), with X11 fallback where required.
+- **Nvidia GPUs:** Automatic detection and installation of proprietary drivers, with fallbacks for open drivers if required.
 - **Wi-Fi firmware:** Curated firmware packages for common chipsets (Intel, Realtek, Broadcom).
 - **Laptop quirks:** Default power management profiles and compatibility tweaks for common OEM hardware.
 
 ### 6) Application Distribution & Updates
 - **GUI app store:** KDE Discover as the primary UI, branded for NeOS.
 - **Backend recommendation:** Use PackageKit with libalpm backend for best Discover integration on Arch. Offer pamac only as an optional, advanced add-on if AUR access is a goal.
-- **Flatpak:** Enable Flatpak + Flathub by default for GUI app distribution and sandboxing.
-- **AUR stance:** AUR is unsupported by default; advanced users may opt in at their own risk.
 - **Update safety:** Staged updates with automated smoke tests and manual QA for KDE/Qt/driver changes.
 
 ## UX Architecture Considerations
@@ -71,7 +63,7 @@ These applications are preinstalled but user-removable; NeOS does not claim redi
 - **Snapshot-based rolling model:** NeOS snapshots upstream Arch repos, tests them as a coherent set, and releases a validated snapshot rather than mixing frozen NeOS packages with live Arch feeds.
 - **No mixed feeds:** Avoid combining a frozen NeOS stack with live Arch core/extra; stability requires coherent snapshots.
 - **Staging pipeline:**
-  1. **Upstream Arch snapshot**
+  1. **Upstream Arch sync**
   2. **NeOS staging repo** (automated tests and QA)
   3. **NeOS stable repo**
 - **Update gates:** KDE stack, Qt, and graphics drivers promote only after validation.
@@ -86,7 +78,7 @@ These applications are preinstalled but user-removable; NeOS does not claim redi
 
 ## Security Defaults and Sandboxing
 - **Baseline security:** Standard Arch kernel hardening and systemd defaults.
-- **Sandboxing:** Prefer Flatpak for GUI apps; ensure KDE portals are configured by default.
+- **Sandboxing:** Prefer Flatpak for GUI apps where appropriate; ensure KDE portals are configured by default.
 - **App confinement:** Consider AppArmor profiles for proprietary components (e.g., browsers) when feasible.
 
 ## Best-Practice Recommendations (Windows Familiarity + KDE Idioms)

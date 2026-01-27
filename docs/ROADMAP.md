@@ -1,7 +1,7 @@
 # NeOS Development Roadmap
 
 ## Scope and Philosophy
-NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable behavior through staged updates and QA validation. The roadmap prioritizes a Windows-familiar KDE Plasma experience, low-friction onboarding, and sustainable long-term maintenance, with snapshot-based repo releases to keep the system coherent.
+NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable behavior through staged updates and QA validation. The roadmap prioritizes a Windows-familiar KDE Plasma experience, low-friction onboarding, and sustainable long-term maintenance.
 
 ## Phase 0: Foundation and Planning
 **Goals**
@@ -9,9 +9,9 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
 - Define build pipeline requirements, QA expectations, and release cadence.
 
 **Key Deliverables**
-- Packaging and repo policies (what lives in Arch vs NeOS repos, snapshot cadence, and promotion gates).
+- Packaging and repo policies (what lives in Arch vs NeOS repos).
 - CI/CD plan for repo builds, ISO generation, and update promotion.
-- Baseline KDE Plasma configuration and UX principles (Wayland-first, Windows-like defaults).
+- Baseline KDE Plasma configuration and UX principles.
 
 ## Phase 1: Build System and ISO Creation
 **Goals**
@@ -24,10 +24,8 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
    - Create a dedicated NeOS profile with custom packages and configs.
    - Automate ISO builds via CI for nightly and release candidates.
 2. **Base image defaults**
-   - Preconfigure KDE Plasma defaults (layout, theming, wallpapers) with `neos-artwork` and `neos-settings`.
-   - Integrate Calamares with NeOS branding and default options (Replace Windows / Dual Boot paths).
-   - Use Btrfs by default with snapshot-ready subvolumes.
-   - Standardize on GRUB for Windows-friendly dual boot.
+   - Preconfigure KDE Plasma defaults (layout, theming, wallpapers).
+   - Integrate Calamares with NeOS branding and default options.
    - Add default apps (Brave, VLC, nomacs, Thunderbird, LibreOffice).
 
 **Acceptance Criteria**
@@ -41,7 +39,7 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
 
 **Workstreams**
 1. **Repository topology**
-   - Snapshot Arch official repos for coherent release sets.
+   - Mirror Arch official repos for baseline packages.
    - Create NeOS-curated repos for KDE, Qt, drivers, firmware, and key desktop utilities.
    - Maintain a staging repo for pre-release validation.
 2. **Update gates**
@@ -80,7 +78,6 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
 **Workstreams**
 1. **Driver automation**
    - Detect Nvidia GPUs and install proprietary drivers automatically.
-   - Treat `nvidia-dkms` availability as a first-boot requirement.
    - Integrate dkms module handling for kernel updates.
 2. **Firmware coverage**
    - Curate Wi-Fi and laptop firmware packages in NeOS repos.
@@ -134,10 +131,8 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
 1. **Discover integration**
    - Brand KDE Discover for NeOS and set it as the default app store.
    - Validate PackageKit/libalpm backend behavior for updates and installations.
-   - Enable Flatpak + Flathub by default for GUI app installs.
 2. **Optional advanced tooling**
    - If AUR access is desired, ship pamac as an opt-in advanced tool (not default).
-   - Document that AUR usage is unsupported and best-effort only.
 3. **Update UX**
    - Surface clear update notes for desktop-critical changes.
 
