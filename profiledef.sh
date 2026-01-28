@@ -15,6 +15,8 @@ arch="x86_64"
 airootfs_image_type="erofs"
 
 file_permissions=(
+  ["/etc/shadow"]="0:0:400"
+  ["/root"]="0:0:750"
   ["/etc/pacman.conf"]="0:0:644"
   ["/etc/sudoers.d/wheel"]="0:0:440"
   ["/etc/systemd/zram-generator.conf"]="0:0:644"
