@@ -10,8 +10,21 @@ iso_version="${_iso_date:0:4}.${_iso_date:4:2}.${_iso_date:6:2}"
 unset _iso_date
 install_dir="neos"
 buildmodes=("iso")
-bootmodes=("bios.syslinux.mbr" "bios.syslinux.eltorito" "uefi-x64.systemd-boot.esp" "uefi-x64.systemd-boot.eltorito")
-arch="x86_64"
+if [ -z "$arch" ]; then
+  arch="x86_64"
+fi
+
+if [ "$arch" == "x86_64" ]; then
+  bootmodes=("bios.syslinux.mbr" "bios.syslinux.eltorito" "uefi-x64.systemd-boot.esp" "uefi-x64.systemd-boot.eltorito")
+elif [ "$arch" == "i686" ]; then
+  bootmodes=("bios.syslinux.mbr" "bios.syslinux.eltorito")
+elif [ "$arch" == "aarch64" ]; then
+  bootmodes=("uefi-aarch64.systemd-boot.esp" "uefi-aarch64.systemd-boot.eltorito")
+else
+  # Fallback or default for other architectures
+  bootmodes=("uefi-${arch}.systemd-boot.esp" "uefi-${arch}.systemd-boot.eltorito")
+fi
+
 airootfs_image_type="erofs"
 
 file_permissions=(
