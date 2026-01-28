@@ -40,3 +40,15 @@ calamares
 grub
 brave
 nomacs
+cryptsetup
+lvm2
+mdadm
+open-vm-tools
+virtualbox-guest-utils-nox
+qemu-guest-agent
+usbutils
+smartmontools
+openssh
+rsync
+man-db
+man-pages
