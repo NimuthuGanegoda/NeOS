@@ -19,4 +19,5 @@ file_permissions=(
   ["/root"]="0:0:750"
   ["/etc/pacman.conf"]="0:0:644"
   ["/etc/sudoers.d/wheel"]="0:0:440"
+  ["/etc/systemd/zram-generator.conf"]="0:0:644"
 )
