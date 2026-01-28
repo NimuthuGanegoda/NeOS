@@ -1,5 +1,6 @@
 base
-linux
+linux-lqx
+linux-lqx-headers
 linux-firmware
 mkinitcpio
 mkinitcpio-archiso
@@ -22,7 +23,7 @@ xf86-video-ati
 xf86-video-intel
 xf86-video-nouveau
 xf86-video-vmware
-nvidia
+nvidia-dkms
 nvidia-utils
 networkmanager
 dhcpcd
@@ -73,6 +74,7 @@ unzip
 os-prober
 mtools
 xdg-user-dirs
+zram-generator
 # Printing
 cups
 print-manager
