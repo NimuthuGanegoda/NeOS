@@ -5,7 +5,7 @@
 ## Scope and Philosophy
 NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable behavior through staged updates and QA validation. The roadmap prioritizes a Windows-familiar KDE Plasma experience, low-friction onboarding, and sustainable long-term maintenance.
 
-## Phase 0: Foundation and Planning
+## Phase 0: Foundations and Policy
 **Goals**
 - Establish project standards, repository structure, and contributor documentation.
 - Define build pipeline requirements, QA expectations, and release cadence.
@@ -15,10 +15,9 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
 - CI/CD plan for repo builds, ISO generation, and update promotion.
 - Baseline KDE Plasma configuration and UX principles.
 
-## Phase 1: Build System and ISO Creation
+## Phase 1: Repository Snapshot Infrastructure
 **Goals**
-- Build reproducible NeOS installation media.
-- Automate ISO generation with staged repos and curated defaults.
+- Build the infrastructure that makes snapshot-based rolling releases reliable.
 
 **Workstreams**
 1. **Build system**
@@ -31,10 +30,10 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
    - Add default apps (Brave, VLC, nomacs, Thunderbird, LibreOffice).
 
 **Acceptance Criteria**
-- ISO reproducibility across CI environments.
-- Successful clean install in VM with minimal manual setup.
+- A documented and repeatable snapshot promotion process.
+- Staging snapshots validated before stable release.
 
-## Phase 2: Repository and Update Strategy
+## Phase 2: ISO Build and Branding
 **Goals**
 - Define a reliable staging pipeline and update channel strategy.
 - Keep KDE/Qt/drivers stable without freezing Arch updates.
@@ -52,12 +51,12 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
    - Keep rollback packages for critical components.
 
 **Acceptance Criteria**
-- Staging repo receives new KDE/Qt versions before stable.
-- Regression detection workflow documented and proven.
+- ISO builds are reproducible across CI environments.
+- Clean install reaches a ready-to-use desktop without manual fixes.
 
-## Phase 3: Installer and First-Boot Experience
+## Phase 3: Installer and First-Boot UX
 **Goals**
-- Deliver a Windows-like, low-friction installer and a polished first-boot flow.
+- Deliver a Windows-like installation flow and a reliable first-boot experience.
 
 **Workstreams**
 1. **Calamares customization**
@@ -70,12 +69,12 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
    - Provide privacy and telemetry opt-in controls.
 
 **Acceptance Criteria**
-- Installer feels consistent and branded.
-- New user can reach a usable desktop with no terminal steps.
+- New users reach a functioning desktop with no terminal steps.
+- Dual-boot setup works reliably on common hardware.
 
-## Phase 4: Hardware and Driver Handling
+## Phase 4: Hardware & Driver Reliability
 **Goals**
-- Ensure zero-friction hardware enablement for typical users.
+- Ensure hardware works out of the box, with NVIDIA treated as a first-class requirement.
 
 **Workstreams**
 1. **Driver automation**
@@ -87,12 +86,12 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
    - Default power profiles and known-quirk presets for common laptops.
 
 **Acceptance Criteria**
-- Nvidia users boot to working graphics by default.
-- Common laptops function without manual driver installs.
+- Nvidia users boot to working graphics without manual intervention.
+- Common laptops function without driver troubleshooting.
 
-## Phase 5: Security Defaults and Sandboxing
+## Phase 5: Application & Update UX
 **Goals**
-- Balance usability with sensible security defaults.
+- Make software management GUI-first and predictable.
 
 **Workstreams**
 1. **System hardening**
@@ -105,12 +104,12 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
    - Clear guidelines for app confinement and exceptions.
 
 **Acceptance Criteria**
-- Flatpak-compatible apps integrate smoothly.
-- Security policies are documented and enforceable.
+- Users can install and update apps without terminal usage.
+- Update UX surfaces clear notes for desktop-critical changes.
 
-## Phase 6: UX Familiarity and Polish
+## Phase 6: UX Polish and Windows Familiarity
 **Goals**
-- Make NeOS familiar to Windows users while maintaining KDE quality.
+- Deliver a KDE Plasma experience that feels familiar to Windows users.
 
 **Workstreams**
 1. **UI layout**
@@ -122,8 +121,8 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
    - Set sensible default applications and file associations.
 
 **Acceptance Criteria**
-- Users can navigate without learning KDE conventions from scratch.
-- Visual consistency across desktop and bundled apps.
+- Users can navigate without relearning desktop conventions.
+- Visual consistency across core desktop surfaces.
 
 ## Phase 7: App Store and Package Management UX
 **Goals**
@@ -157,7 +156,7 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
    - Compliance with upstream licenses and redistribution rules.
 
 **Acceptance Criteria**
-- Consistent update cadence and rollback plan.
+- Reliable cadence for snapshot releases.
 - Clear governance and contributor workflows.
 
 ## Best-Practice Recommendations (Windows Familiarity + KDE Idioms)
@@ -176,7 +175,7 @@ NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable b
 - **Fork fatigue:** Excessive divergence from Arch increases maintenance costs.
 
 ## Success Metrics
-- **Install success rate:** High completion rate in telemetry-free test cohorts.
-- **Update reliability:** Minimal rollback usage after updates.
-- **Support volume:** Low volume of driver and installation issues.
-- **User satisfaction:** Positive feedback on usability and polish.
+- **Install success rate:** high completion rate in test cohorts.
+- **Update reliability:** minimal rollback usage after updates.
+- **Support volume:** low volume of driver and installation issues.
+- **User satisfaction:** positive feedback on usability and polish.
