@@ -73,3 +73,5 @@ xdg-user-dirs
 # Printing
 cups
 print-manager
+pciutils
+python
