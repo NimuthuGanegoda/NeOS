@@ -1,5 +1,19 @@
 # NeOS Architecture
 
+[← Back to Documentation Index](../README.md#documentation)
+
+## Table of Contents
+- [Overview](#overview)
+- [Architecture Goals](#architecture-goals)
+- [System Layers](#system-layers)
+- [UX Architecture Considerations](#ux-architecture-considerations)
+- [Maintenance & Operational Considerations](#maintenance--operational-considerations)
+- [Security Defaults and Sandboxing](#security-defaults-and-sandboxing)
+- [Best-Practice Recommendations](#best-practice-recommendations-windows-familiarity--kde-idioms)
+- [Risks and Pitfalls](#risks-and-pitfalls-arch-based-distribution)
+- [Architecture Decisions](#architecture-decisions-initial-recommendations)
+- [Performance Strategy](#performance-strategy)
+
 ## Overview
 NeOS (Next Evolution Operating System) is an Arch Linux–based desktop OS targeting x86-64 hardware with a KDE Plasma desktop curated to be a drop-in replacement for Windows or other graphical OSes. The architecture prioritizes a polished, predictable end-user experience while preserving Arch’s rolling-release benefits through staged, curated updates.
 

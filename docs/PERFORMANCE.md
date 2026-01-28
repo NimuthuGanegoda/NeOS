@@ -1,5 +1,7 @@
 # NeOS Performance Standards
 
+[← Back to Documentation Index](../README.md#documentation)
+
 Speed is a feature. To successfully replace existing operating systems, NeOS must be measurably faster and more responsive. This document defines the performance budgets and optimization strategies for the project.
 
 ## Table of Contents
