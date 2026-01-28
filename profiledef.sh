@@ -10,6 +10,7 @@ install_dir="neos"
 buildmodes=("iso")
 bootmodes=("bios.syslinux.mbr" "bios.syslinux.eltorito" "uefi-x64.systemd-boot.esp" "uefi-x64.systemd-boot.eltorito")
 arch="x86_64"
+airootfs_image_type="erofs"
 
 file_permissions=(
   ["/etc/pacman.conf"]="0:0:644"
