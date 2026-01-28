@@ -1,5 +1,7 @@
 # NeOS Development Roadmap
 
+[← Back to Documentation Index](../README.md#documentation)
+
 ## Scope and Philosophy
 NeOS is a curated rolling-release, Arch-based desktop OS targeting predictable behavior through staged updates and QA validation. The roadmap prioritizes a Windows-familiar KDE Plasma experience, low-friction onboarding, and sustainable long-term maintenance.
 
