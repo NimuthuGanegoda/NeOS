@@ -26,6 +26,21 @@ else
 fi
 
 airootfs_image_type="erofs"
+airootfs_image_tool_options=("-Xcompression" "zstd")  # Use zstd for better compression ratio and speed
+
+# Performance-focused kernel parameters
+kernel_parameters+=(
+  "elevator=kyber"          # I/O scheduler optimized for fast storage
+  "nowatchdog"              # Disable hardware watchdog unless specifically needed
+  "mce=ignore_ce"           # Ignore corrected errors to reduce log noise
+  "intel_pstate=enable"     # Intel CPU power management
+  "amd_pstate=enable"       # AMD CPU power management
+  "quiet"                   # Reduce boot verbosity for faster boot
+  "splash"                  # Show splash screen instead of boot messages
+  "rd.systemd.show_status=false"  # Hide systemd status during boot
+  "rd.udev.log_level=3"     # Reduce udev logging level
+  "vt.global_cursor_default=0"    # Hide cursor during boot
+)
 
 file_permissions=(
   ["/etc/shadow"]="0:0:400"
