@@ -54,6 +54,7 @@ graph TD
 
 - **Kernel & core system:** Upstream Arch kernel with optional `linux-lts` fallback, systemd, coreutils, and baseline Arch packages.
 - **Package manager:** pacman for system-level package management.
+- **Boot stack:** GRUB for bootloader, mkinitcpio with systemd init, and early filesystem support for Btrfs/ZFS where used.
 - **Repository structure:**
   - **Arch official repos:** baseline system packages and non-desktop-critical updates.
   - **NeOS curated repos:** KDE Plasma, KDE Frameworks, Qt stack, graphics drivers, firmware, and desktop-critical utilities.
