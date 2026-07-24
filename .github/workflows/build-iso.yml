@@ -400,7 +400,7 @@ jobs:
           # Retry up to 3 times with exponential backoff
           for attempt in 1 2 3; do
             echo "Attempt $attempt/3..."
-            if gh release upload "$TAG" "$ISO_FILE" --clobber 2>&1; then
+            if gh release upload "$TAG" "$ISO_FILE" --clobber -R "$GITHUB_REPOSITORY" 2>&1; then
               echo "✅ ISO uploaded successfully."
               break
             fi
