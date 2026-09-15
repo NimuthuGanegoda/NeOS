@@ -60,6 +60,7 @@ echo "Generating NeOS overlay manifest -> $NETINSTALL_OVERLAY"
     cd "$PROFILE_DIR/airootfs" && find . \( -type f -o -type l \) -printf '%P\n'
 ) | grep -vE \
     -e '^etc/calamares/' \
+    -e '^usr/lib/calamares/' \
     -e '^etc/pacman\.conf$' \
     -e '^etc/pacman\.d/' \
     -e '^etc/polkit-1/rules\.d/49-nopasswd_calamares\.rules$' \

@@ -39,4 +39,5 @@ file_permissions=(
   ["/usr/local/bin/neos-operations-hub"]="0:0:755"
   ["/usr/local/bin/neos-hardware-setup"]="0:0:755"
   ["/usr/local/bin/neos-display-sync"]="0:0:755"
+  ["/usr/lib/calamares/modules/neospacstrap/main.py"]="0:0:755"
 )
