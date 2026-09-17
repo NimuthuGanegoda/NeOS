@@ -405,6 +405,8 @@ jobs:
           cd "$GITHUB_WORKSPACE/out"
           sha256sum -- *.iso > SHA256SUMS
           cat SHA256SUMS
+          sha512sum -- *.iso > SHA512SUMS
+          cat SHA512SUMS
 
       - name: Generate release tag and notes
         id: tag
@@ -453,6 +455,7 @@ jobs:
           body_path: release-body.md
           files: |
             out/SHA256SUMS
+            out/SHA512SUMS
             out/vm/*
 
       - name: Upload Release Assets to SourceForge
@@ -474,9 +477,12 @@ jobs:
           shopt -s nullglob
           cp out/*.iso sf_release/ || true
           cp out/SHA256SUMS sf_release/ || true
+          cp out/SHA512SUMS sf_release/ || true
           if [ -d "out/vm" ]; then
             cp -r out/vm sf_release/
           fi
+          # Copy release notes to act as the directory index on SourceForge FRS
+          cp release-body.md sf_release/README.md || true
 
           if [ -z "$(ls -A sf_release)" ]; then
             echo "[FAIL] No release assets found to upload"
