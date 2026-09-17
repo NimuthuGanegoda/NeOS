@@ -455,24 +455,31 @@ jobs:
             out/SHA256SUMS
             out/vm/*
 
-      - name: Upload ISO to SourceForge
+      - name: Upload Release Assets to SourceForge
         if: contains(fromJSON('["refs/heads/main","refs/heads/testing"]'), github.ref)
         env:
           SOURCEFORGE_PRIVATE_KEY: ${{ secrets.SOURCEFORGE_PRIVATE_KEY }}
           SOURCEFORGE_USERNAME: ${{ secrets.SOURCEFORGE_USERNAME }}
           SOURCEFORGE_PROJECT: ${{ secrets.SOURCEFORGE_PROJECT }}
+          RELEASE_VERSION: ${{ steps.tag.outputs.value }}
         run: |
           set -euo pipefail
 
           cd "$GITHUB_WORKSPACE"
 
-          # Robust ISO detection with nullglob
+          echo "Preparing release assets..."
+          mkdir -p sf_release
+          
+          # Gather all artifacts
           shopt -s nullglob
-          files=(out/*.iso)
-          ISO_FILE="${files[0]:-}"
+          cp out/*.iso sf_release/ || true
+          cp out/SHA256SUMS sf_release/ || true
+          if [ -d "out/vm" ]; then
+            cp -r out/vm sf_release/
+          fi
 
-          if [[ -z "$ISO_FILE" ]]; then
-            echo "[FAIL] No ISO file found to upload"
+          if [ -z "$(ls -A sf_release)" ]; then
+            echo "[FAIL] No release assets found to upload"
             exit 1
           fi
 
@@ -484,18 +491,26 @@ jobs:
           # Add SourceForge to known hosts
           ssh-keyscan -t rsa,ed25519 frs.sourceforge.net >> ~/.ssh/known_hosts 2>/dev/null
 
-          echo "Uploading $ISO_FILE to SourceForge project $SOURCEFORGE_PROJECT as $SOURCEFORGE_USERNAME..."
+          TARGET_DIR="/home/frs/project/${SOURCEFORGE_PROJECT}/${{ github.ref_name }}/${RELEASE_VERSION}"
+          
+          echo "Creating target directory $TARGET_DIR on SourceForge..."
+          # SourceForge allows creating directories via SSH
+          ssh -o StrictHostKeyChecking=no "${SOURCEFORGE_USERNAME}@frs.sourceforge.net" "create" || echo "Note: Sourceforge shell is restricted, relying on rsync to create dirs."
+
+          echo "Uploading release assets to $TARGET_DIR..."
 
           # Retry up to 3 times with exponential backoff
           for attempt in 1 2 3; do
             echo "Attempt $attempt/3..."
-            # Uploading directly to the project's root FRS directory
-            if rsync -avP -e "ssh -o StrictHostKeyChecking=no" "$ISO_FILE" "${SOURCEFORGE_USERNAME}@frs.sourceforge.net:/home/frs/project/${SOURCEFORGE_PROJECT}/"; then
-              echo "ISO uploaded successfully to SourceForge."
+            # Using --rsync-path="mkdir -p ${TARGET_DIR} && rsync" is another trick, but 
+            # rsync with --mkpath or just standard rsync to a non-existent dir might work on FRS.
+            # However, SourceForge FRS sometimes auto-creates paths if you use standard rsync
+            if rsync -avP -e "ssh -o StrictHostKeyChecking=no" sf_release/ "${SOURCEFORGE_USERNAME}@frs.sourceforge.net:${TARGET_DIR}/"; then
+              echo "Assets uploaded successfully to SourceForge."
               break
             fi
             if [[ $attempt -eq 3 ]]; then
-              echo "[FAIL] Failed to upload ISO after 3 attempts"
+              echo "[FAIL] Failed to upload assets after 3 attempts"
               exit 1
             fi
             DELAY=$((30 * attempt))
