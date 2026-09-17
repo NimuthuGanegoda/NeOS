@@ -92,6 +92,8 @@ espeak-ng
 espeakup
 orca
 speech-dispatcher
+openssh
+mosh
 pv
 snapper
 parted

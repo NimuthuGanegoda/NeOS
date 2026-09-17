@@ -110,6 +110,8 @@ orca
 speech-dispatcher
 
 # Utilities & Tools
+openssh
+mosh
 pv
 snapper
 parted
