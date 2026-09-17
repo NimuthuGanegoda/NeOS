@@ -366,57 +366,6 @@ jobs:
           REQUIRE_ISO=1 bash tests/verify_iso_calamares_libs.sh
           bash tests/verify_iso_smoketest.sh
 
-      - name: Validate ISO Size
-        if: contains(fromJSON('["refs/heads/main","refs/heads/testing"]'), github.ref)
-        run: |
-          set -euo pipefail
-
-          cd "$GITHUB_WORKSPACE"
-
-          shopt -s nullglob
-
-          files=(out/*.iso)
-          ISO_FILE="${files[0]:-}"
-
-          if [[ -z "$ISO_FILE" ]]; then
-            echo "[FAIL] No ISO file found to validate"
-            exit 1
-          fi
-
-          ISO_SIZE=$(stat -c%s "$ISO_FILE")
-          MAX_SIZE=$((2 * 1024 * 1024 * 1024))
-
-          printf -v ISO_SIZE_MB "%d.%02d" \
-            "$((ISO_SIZE / 1048576))" \
-            "$(((ISO_SIZE % 1048576) * 100 / 1048576))"
-
-          printf -v MAX_SIZE_MB "%d.%02d" \
-            "$((MAX_SIZE / 1048576))" \
-            "$(((MAX_SIZE % 1048576) * 100 / 1048576))"
-
-          echo "ISO File: $ISO_FILE"
-          echo "ISO Size: $ISO_SIZE bytes (${ISO_SIZE_MB} MiB)"
-          echo "Max Size: $MAX_SIZE bytes (${MAX_SIZE_MB} MiB)"
-
-          if (( ISO_SIZE >= MAX_SIZE )); then
-            EXCESS_SIZE=$((ISO_SIZE - MAX_SIZE))
-
-            printf -v EXCESS_SIZE_MB "%d.%02d" \
-              "$((EXCESS_SIZE / 1048576))" \
-              "$(((EXCESS_SIZE % 1048576) * 100 / 1048576))"
-
-            echo "[FAIL] ISO exceeds GitHub release limit by ${EXCESS_SIZE_MB} MiB!"
-            echo ""
-            echo "How to fix:"
-            echo "   - Review 'packages.x86_64' and remove unnecessary dependencies."
-            echo "   - Utilize 'NoExtract' rules in 'pacman.conf'."
-            echo "   - Check for large unintended assets in 'airootfs/'."
-            echo "   - Consult DEEP_AUDIT.md for more size reduction strategies."
-
-            exit 1
-          else
-            echo "ISO size is within limits."
-          fi
 
       - name: Prepare ISO for upload
         id: iso
@@ -506,15 +455,16 @@ jobs:
             out/SHA256SUMS
             out/vm/*
 
-      - name: Upload ISO to Release
+      - name: Upload ISO to SourceForge
         if: contains(fromJSON('["refs/heads/main","refs/heads/testing"]'), github.ref)
         env:
-          GH_TOKEN: ${{ github.token }}
+          SOURCEFORGE_PRIVATE_KEY: ${{ secrets.SOURCEFORGE_PRIVATE_KEY }}
+          SOURCEFORGE_USERNAME: ${{ secrets.SOURCEFORGE_USERNAME }}
+          SOURCEFORGE_PROJECT: ${{ secrets.SOURCEFORGE_PROJECT }}
         run: |
           set -euo pipefail
 
           cd "$GITHUB_WORKSPACE"
-          TAG="${{ steps.tag.outputs.value }}"
 
           # Robust ISO detection with nullglob
           shopt -s nullglob
@@ -526,13 +476,22 @@ jobs:
             exit 1
           fi
 
-          echo "Uploading $ISO_FILE to release $TAG..."
+          echo "Setting up SSH key for SourceForge..."
+          mkdir -p ~/.ssh
+          echo "$SOURCEFORGE_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Add SourceForge to known hosts
+          ssh-keyscan -t rsa,ed25519 frs.sourceforge.net >> ~/.ssh/known_hosts 2>/dev/null
+
+          echo "Uploading $ISO_FILE to SourceForge project $SOURCEFORGE_PROJECT as $SOURCEFORGE_USERNAME..."
 
           # Retry up to 3 times with exponential backoff
           for attempt in 1 2 3; do
             echo "Attempt $attempt/3..."
-            if gh release upload "$TAG" "$ISO_FILE" --clobber -R "$GITHUB_REPOSITORY" 2>&1; then
-              echo "ISO uploaded successfully."
+            # Uploading directly to the project's root FRS directory
+            if rsync -avP -e "ssh -o StrictHostKeyChecking=no" "$ISO_FILE" "${SOURCEFORGE_USERNAME}@frs.sourceforge.net:/home/frs/project/${SOURCEFORGE_PROJECT}/"; then
+              echo "ISO uploaded successfully to SourceForge."
               break
             fi
             if [[ $attempt -eq 3 ]]; then
