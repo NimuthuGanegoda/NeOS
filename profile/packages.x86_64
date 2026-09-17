@@ -155,3 +155,8 @@ discover
 packagekit-qt6
 flatpak
 fwupd
+linux-firmware-qlogic
+linux-firmware-other
+aic94xx-firmware
+wd719x-firmware
+upd72020x-fw
