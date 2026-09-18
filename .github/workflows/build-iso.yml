@@ -494,7 +494,7 @@ jobs:
           # Retry up to 3 times with exponential backoff
           for attempt in 1 2 3; do
             echo "Attempt $attempt/3..."
-            if rsync -avP -e "ssh -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa" sf_release/ "${SOURCEFORGE_USERNAME}@frs.sourceforge.net:${TARGET_DIR}/"; then
+            if rsync -avP -e "ssh -q -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa" sf_release/ "${SOURCEFORGE_USERNAME}@frs.sourceforge.net:${TARGET_DIR}/" 2> >(grep -v "Could not chdir to home directory" >&2); then
               echo "Assets uploaded successfully to SourceForge."
               break
             fi
