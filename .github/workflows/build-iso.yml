@@ -492,18 +492,18 @@ jobs:
           fi
 
           echo "Setting up SSH key for SourceForge..."
-          mkdir -p ~/.ssh
-          echo "$SOURCEFORGE_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          mkdir -p "$HOME/.ssh"
+          echo "$SOURCEFORGE_PRIVATE_KEY" > "$HOME/.ssh/id_rsa"
+          chmod 600 "$HOME/.ssh/id_rsa"
           
           # Add SourceForge to known hosts
-          ssh-keyscan -t rsa,ed25519 frs.sourceforge.net >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -t rsa,ed25519 frs.sourceforge.net >> "$HOME/.ssh/known_hosts" 2>/dev/null
 
           TARGET_DIR="/home/frs/project/${SOURCEFORGE_PROJECT}/${{ github.ref_name }}/${RELEASE_VERSION}"
           
           echo "Creating target directory $TARGET_DIR on SourceForge..."
           # SourceForge allows creating directories via SSH
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${SOURCEFORGE_USERNAME}@frs.sourceforge.net" "create" || echo "Note: Sourceforge shell is restricted, relying on rsync to create dirs."
+          ssh -o StrictHostKeyChecking=no -i "$HOME/.ssh/id_rsa" "${SOURCEFORGE_USERNAME}@frs.sourceforge.net" "create" || echo "Note: Sourceforge shell is restricted, relying on rsync to create dirs."
 
           echo "Uploading release assets to $TARGET_DIR..."
 
@@ -513,7 +513,7 @@ jobs:
             # Using --rsync-path="mkdir -p ${TARGET_DIR} && rsync" is another trick, but 
             # rsync with --mkpath or just standard rsync to a non-existent dir might work on FRS.
             # However, SourceForge FRS sometimes auto-creates paths if you use standard rsync
-            if rsync -avP -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" sf_release/ "${SOURCEFORGE_USERNAME}@frs.sourceforge.net:${TARGET_DIR}/"; then
+            if rsync -avP -e "ssh -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa" sf_release/ "${SOURCEFORGE_USERNAME}@frs.sourceforge.net:${TARGET_DIR}/"; then
               echo "Assets uploaded successfully to SourceForge."
               break
             fi
