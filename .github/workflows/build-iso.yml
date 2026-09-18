@@ -478,20 +478,21 @@ jobs:
           cd "$GITHUB_WORKSPACE"
 
           echo "Preparing release assets..."
-          mkdir -p sf_release
+          LOCAL_TARGET="sf_release/${{ github.ref_name }}/${RELEASE_VERSION}"
+          mkdir -p "$LOCAL_TARGET"
           
           # Gather all artifacts
           shopt -s nullglob
-          cp out/*.iso sf_release/ || true
-          cp out/SHA256SUMS sf_release/ || true
-          cp out/SHA512SUMS sf_release/ || true
+          cp out/*.iso "$LOCAL_TARGET"/ || true
+          cp out/SHA256SUMS "$LOCAL_TARGET"/ || true
+          cp out/SHA512SUMS "$LOCAL_TARGET"/ || true
           if [ -d "out/vm" ]; then
-            cp -r out/vm sf_release/
+            cp -r out/vm "$LOCAL_TARGET"/
           fi
           # Copy release notes to act as the directory index on SourceForge FRS
-          cp release-body.md sf_release/README.md || true
+          cp release-body.md "$LOCAL_TARGET"/README.md || true
 
-          if [ -z "$(ls -A sf_release)" ]; then
+          if [ -z "$(ls -A "$LOCAL_TARGET")" ]; then
             echo "[FAIL] No release assets found to upload"
             exit 1
           fi
@@ -504,20 +505,14 @@ jobs:
           # Add SourceForge to known hosts
           ssh-keyscan -t rsa,ed25519 frs.sourceforge.net >> "$HOME/.ssh/known_hosts" 2>/dev/null
 
-          TARGET_DIR="/home/frs/project/${SOURCEFORGE_PROJECT}/${{ github.ref_name }}/${RELEASE_VERSION}"
+          # We sync sf_release/ which CONTAINS the testing/version/ dirs
+          TARGET_DIR="/home/frs/project/${SOURCEFORGE_PROJECT}"
           
-          echo "Creating target directory $TARGET_DIR on SourceForge..."
-          # SourceForge allows creating directories via SSH
-          ssh -o StrictHostKeyChecking=no -i "$HOME/.ssh/id_rsa" "${SOURCEFORGE_USERNAME}@frs.sourceforge.net" "create" || echo "Note: Sourceforge shell is restricted, relying on rsync to create dirs."
-
-          echo "Uploading release assets to $TARGET_DIR..."
+          echo "Uploading release assets to $TARGET_DIR (with full path mapping)..."
 
           # Retry up to 3 times with exponential backoff
           for attempt in 1 2 3; do
             echo "Attempt $attempt/3..."
-            # Using --rsync-path="mkdir -p ${TARGET_DIR} && rsync" is another trick, but 
-            # rsync with --mkpath or just standard rsync to a non-existent dir might work on FRS.
-            # However, SourceForge FRS sometimes auto-creates paths if you use standard rsync
             if rsync -avP -e "ssh -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa" sf_release/ "${SOURCEFORGE_USERNAME}@frs.sourceforge.net:${TARGET_DIR}/"; then
               echo "Assets uploaded successfully to SourceForge."
               break
