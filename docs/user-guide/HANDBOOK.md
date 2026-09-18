@@ -23,9 +23,7 @@ Unlike a standard Arch Linux installation which is "Do It Yourself" (DIY), NeOS 
 
 ### For Users (Installing NeOS)
 *   **Hardware**: A 64-bit (x86_64) computer.
-    *   *Architecture Limitations:*
-        *   `x86_64` is the only officially supported architecture for the full GUI experience (including the Calamares installer, snapshots, and ZRAM compression).
-        *   `i686` and `aarch64` are experimental and lack the full GUI experience (including Calamares installer, snapshots, and ZRAM compression).
+    *   *Architecture Limitations:* `x86_64` is the only supported architecture, including the full GUI experience, Calamares installer, snapshots, and ZRAM compression.
 *   **Storage**: At least 20GB of free disk space (SSD recommended).
 *   **Memory**: At least 4GB RAM (8GB+ recommended).
 *   **Boot Mode**: UEFI (recommended) or Legacy BIOS.
@@ -97,8 +95,7 @@ This repository is an **Archiso profile**. If you are new, focus on these key pa
 | --- | --- | --- |
 | `profiledef.sh` | Core Archiso profile settings (ISO label, publisher, build modes, file permissions). | You need to change identity, metadata, permissions, or boot profile behavior. |
 | `build.sh` | Wrapper script to build the ISO with project defaults. | You want to change build flow (output/work directories, cleanup, build args). |
-| `packages.x86_64` | Main package manifest for the supported architecture. | You are adding/removing software from the live image. |
-| `packages.i686` / `packages.aarch64` | Experimental architecture package lists. | You are working on non-x86_64 experiments. |
+| `packages.x86_64` | Package list for the supported architecture. | You are adding or removing software from the live image. |
 | `bootstrap_packages.*` | Minimal package sets used during bootstrap stages. | You are changing early build/bootstrap dependencies. |
 | `pacman.conf` | Package manager configuration for the build environment (repos, signatures, options). | Repositories or package trust configuration must change. |
 | `airootfs/` | Files copied directly into the live root filesystem. | You are changing system defaults, services, scripts, installer behavior, or branding. |

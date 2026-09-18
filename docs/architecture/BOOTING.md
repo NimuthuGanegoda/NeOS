@@ -20,4 +20,4 @@ The BIOS boot process is handled by Syslinux. The configuration files are locate
 
 The overall boot configuration is tied together in the `archiso` profile definition:
 
-*   **`profiledef.sh`**: This script defines the `bootmodes` variable, which specifies which bootloaders are used for different architectures (e.g., `uefi.grub` for x86_64 and aarch64, `bios.syslinux` for x86_64 and i686). It also sets the ISO label used by the bootloaders to find the boot medium.
+*   **`profiledef.sh`**: This script defines the `bootmodes` variable, which specifies the GRUB and Syslinux bootloaders used for x86_64. It also sets the ISO label used by the bootloaders to find the boot medium.

@@ -125,11 +125,9 @@ We welcome technical contributions that align with our stability-first philosoph
 
 ## Architecture Support Matrix
 
-NeOS officially targets the `x86_64` architecture. Other architectures are maintained on a best-effort, experimental basis.
+NeOS officially supports the `x86_64` architecture only.
 
-*   **`x86_64` (Primary)**: Full feature parity, GUI installer support, snapshot-gated stability, and ZRAM optimization.
-*   **`i686` (Experimental)**: Minimal CLI base only. Lacks GUI installer, snapshot integration, and ZRAM support.
-*   **`aarch64` (Experimental)**: Minimal CLI base only. Lacks GUI installer, snapshot integration, and ZRAM support.
+*   **`x86_64`**: Full feature parity, GUI installer support, snapshot-gated stability, and ZRAM optimization.
 
 <!-- SENTINEL: Validate that no external URLs are introduced here. -->
 

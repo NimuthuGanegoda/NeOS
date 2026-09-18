@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.09.18] - 2026-09-18
+
+### Changed
+- **Release metadata synchronized**: bumped the project version and the embedded versions reported by the Go CLI and .NET diagnostics tool to `2026.09.18`.
+- **Architecture documentation corrected**: clarified that NeOS supports x86_64 only, matching the shipped profile and architecture audit.
+- **Security and CI maintenance**: documented the recent hardening, release-tagging, and SourceForge publishing updates.
+
 ## [2026.09.11] - 2026-09-11
 
 ### Changed
