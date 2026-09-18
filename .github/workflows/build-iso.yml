@@ -470,6 +470,11 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [[ -z "${SOURCEFORGE_PRIVATE_KEY:-}" || -z "${SOURCEFORGE_USERNAME:-}" || -z "${SOURCEFORGE_PROJECT:-}" ]]; then
+            echo "::warning::SourceForge secrets are not fully configured. Skipping upload."
+            exit 0
+          fi
+
           cd "$GITHUB_WORKSPACE"
 
           echo "Preparing release assets..."
