@@ -11,7 +11,9 @@ fi
 
 
 
-ACTION=$(kdialog --icon preferences-system --title "NeOS Operations Hub" \
+# Assign inside the condition so the exit status is tested directly; testing
+# $? after a separate command substitution is fragile (SC2181).
+if ! ACTION=$(kdialog --icon preferences-system --title "NeOS Operations Hub" \
     --menu "Select a long-term maintenance operation:" \
     "1" "Community Support & Feedback" \
     "2" "Report a System Bug" \
@@ -19,9 +21,11 @@ ACTION=$(kdialog --icon preferences-system --title "NeOS Operations Hub" \
     "4" "Configure Crash Reporting" \
     "5" "System Snapshot & Rollback" \
     "6" "View System Licensing" \
-    "7" "Perform System Update")
+    "7" "Perform System Update"); then
+    exit 0
+fi
 
-if [ $? -ne 0 ] || [ -z "$ACTION" ]; then
+if [ -z "$ACTION" ]; then
     exit 0
 fi
 
@@ -46,7 +50,9 @@ case "$ACTION" in
     "5")
         if command -v snapper >/dev/null 2>&1; then
             TEMP_FILE=$(mktemp "/tmp/snaps.XXXXXX")
-            trap "rm -f \"$TEMP_FILE\"" EXIT INT TERM
+            # Single quotes: the trap must expand $TEMP_FILE when it fires, not
+            # when the trap is installed (SC2064).
+            trap 'rm -f "$TEMP_FILE"' EXIT INT TERM
             snapper list > "$TEMP_FILE" 2>&1
             mapfile -t SNAP_LINES < "$TEMP_FILE"
             if [ ${#SNAP_LINES[@]} -le 2 ]; then
@@ -58,15 +64,13 @@ Snapshots are typically created automatically during system updates."
                 kdialog --icon dialog-information --title "System Snapshots (Read-Only)" --textbox "$TEMP_FILE" 600 400
 
                 # Rollback flow
-                ROLLBACK_ID=$(kdialog --icon dialog-warning --title "System Rollback" --inputbox "Enter the numeric ID of the snapshot to rollback to (or cancel to exit):")
-                if [ $? -eq 0 ] && [ -n "$ROLLBACK_ID" ]; then
+                if ROLLBACK_ID=$(kdialog --icon dialog-warning --title "System Rollback" --inputbox "Enter the numeric ID of the snapshot to rollback to (or cancel to exit):") \
+                    && [ -n "$ROLLBACK_ID" ]; then
                     if [[ "$ROLLBACK_ID" =~ ^[0-9]+$ ]]; then
-                        kdialog --icon dialog-warning --title "Confirm Rollback" --yesno "WARNING: Rolling back to snapshot $ROLLBACK_ID will reboot your system and overwrite current system state.
+                        if kdialog --icon dialog-warning --title "Confirm Rollback" --yesno "WARNING: Rolling back to snapshot $ROLLBACK_ID will reboot your system and overwrite current system state.
 
-Are you sure you want to proceed?"
-                        if [ $? -eq 0 ]; then
-                            /usr/bin/pkexec /usr/bin/snapper rollback "$ROLLBACK_ID"
-                            if [ $? -eq 0 ]; then
+Are you sure you want to proceed?"; then
+                            if /usr/bin/pkexec /usr/bin/snapper rollback "$ROLLBACK_ID"; then
                                 kdialog --icon dialog-information --title "Rollback Successful" --msgbox "System rollback initiated successfully. Please reboot your system."
                             else
                                 kdialog --icon dialog-error --title "Rollback Failed" --error "Failed to initiate system rollback. Please check snapper logs."
@@ -84,7 +88,7 @@ Are you sure you want to proceed?"
         ;;
     "6")
         TEMP_FILE=$(mktemp "/tmp/license.XXXXXX")
-        trap "rm -f \"$TEMP_FILE\"" EXIT INT TERM
+        trap 'rm -f "$TEMP_FILE"' EXIT INT TERM
         cat << 'LICENSE_EOF' | fold -s -w 90 > "$TEMP_FILE"
 MIT License
 
@@ -116,14 +120,17 @@ LICENSE_EOF
         rm -f "$TEMP_FILE"
         ;;
     "7")
-        kdialog --icon dialog-information --title "System Update" --yesno "This will check for and install available system updates.
+        if kdialog --icon dialog-information --title "System Update" --yesno "This will check for and install available system updates.
 
-Proceed?"
-        if [ $? -eq 0 ]; then
+Proceed?"; then
             DBUS_REF=$(kdialog --progressbar "Executing system update..." 100)
             /usr/bin/pkexec /usr/local/bin/neos-autoupdate.sh
             UPDATE_STATUS=$?
-            dbus-send --print-reply --dest=$(echo $DBUS_REF | awk '{print $1}') $(echo $DBUS_REF | awk '{print $2}') org.kde.kdialog.ProgressDialog.close >/dev/null 2>&1
+            # Quote each awk result into its own variable: unquoted command
+            # substitution word-splits on IFS (SC2046/SC2086).
+            DBUS_DEST=$(echo "$DBUS_REF" | awk '{print $1}')
+            DBUS_PATH=$(echo "$DBUS_REF" | awk '{print $2}')
+            dbus-send --print-reply --dest="$DBUS_DEST" "$DBUS_PATH" org.kde.kdialog.ProgressDialog.close >/dev/null 2>&1
 
             if [ $UPDATE_STATUS -eq 0 ]; then
                 kdialog --icon dialog-information --title "Update Complete" --msgbox "System update completed successfully."

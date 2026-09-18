@@ -8,6 +8,22 @@ All notable changes to this project will be documented in this file.
 - **Release metadata synchronized**: bumped the project version and the embedded versions reported by the Go CLI and .NET diagnostics tool to `2026.09.18`.
 - **Architecture documentation corrected**: clarified that NeOS supports x86_64 only, matching the shipped profile and architecture audit.
 - **Security and CI maintenance**: documented the recent hardening, release-tagging, and SourceForge publishing updates.
+- **Documentation drift corrected**: README and CONTRIBUTING no longer claim CI builds on `main` (it triggers on `testing`), the README's offline-install claim now states the condition under which it holds, ADR 0006 names the shipped `nvidia-open-dkms` package and points at the real size gate, and the Handbook's clone URL, build command and `profile/` paths were corrected.
+- **Archived audits marked superseded**: `docs/archive/DEEP_AUDIT.md` and `docs/archive/ISO_BUILD_FIX.md` carry banners noting that their `DatabaseRequired` claim no longer matches the shipped configuration.
+- **CI permissions scoped per job** (`build-iso.yml`): the workflow is read-only by default and the `build` job opts into `contents: write` only for release creation.
+- **ShellCheck coverage widened**: scripts are selected by shebang rather than `*.sh`, so the extensionless privileged scripts in `profile/airootfs/usr/local/bin/` are now linted (67 scripts, up from 51).
+
+### Fixed
+- **`tools/gen-install-repo.sh` aborted every local build**: `((CACHED_COUNT++))`, `((REUSED_COUNT++))` and `((CLEANED++))` were standalone statements under `set -e`, and a post-increment returns the pre-increment value — so the first increment from 0 returned status 1 and terminated the script. Since `build.sh` calls it unguarded behind an `ERR` trap, `sudo ./build.sh` died at the offline-repo step on every normal build. Converted to assignment form.
+- **Online installs preferred unverified packages**: `neos-pacstrap` prepended an unsigned `SigLevel = Optional TrustAll` local repo above `/etc/pacman.conf`, and pacman takes a package from the first repo that provides it — so a stale, unverified copy from the boot medium outranked the signed current package from the mirrors. The local repo is now offline-only, matching the script's documented "always latest" contract for online mode.
+- **ShellCheck findings in two privileged scripts**: quoting in `neos-driver-manager`'s exit trap (SC2016/SC2064), and in `neos-operations-hub` five indirect `$?` checks (SC2181), two trap expansions (SC2064) and an unquoted `dbus-send` command substitution (SC2046/SC2086).
+
+### Added
+- **Regression guard for bare arithmetic increments**: `tests/verify_shell_arithmetic.sh` scans every shell script for standalone `((VAR++))`/`((VAR--))`, which abort a `set -e` script on the first increment from 0. Verified to match the buggy forms and to ignore `if ((i++))`, `((i++)) || true` and `VAR=$((VAR+1))`.
+- **ISO size release gate**: `tests/verify_iso_size.sh` enforces the 2048 MiB budget that README, `profiledef.sh`, PERFORMANCE.md and ADR 0006 all describe as enforced but nothing actually checked. Runs in CI's Validate ISO step; override with `MAX_ISO_MIB`.
+- **Dependabot configuration**: weekly updates for GitHub Actions plus the Cargo and Go toolchain modules, so the floating action tags used by the release workflow stay current and visible.
+- **Project knowledge graph** in `graphify-out/`: 372 nodes, 422 edges, 77 communities over all code and documentation, with god nodes, cohesion scores and an integrity diagnostic. Committed deliberately; `.gitignore` previously excluded it.
+- **Deep audit report**: `reports/v2026.09.18/AUDIT_AND_RECOMMENDATIONS.md` documents the findings above, the fixes applied, what was deliberately left alone, and four open decisions (offline-repo vs size budget, build-path unification, real toolchain gates, boot/install verification).
 
 ## [2026.09.11] - 2026-09-11
 

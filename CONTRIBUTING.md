@@ -4,7 +4,7 @@ Thanks for your interest in improving NeOS! This guide covers how to propose cha
 
 ## Getting started
 
-1. Fork the repository (https://github.com/uthsarad/NeOS) and create a feature branch from `main`.
+1. Fork the repository (https://github.com/uthsarad/NeOS) and create a feature branch from `testing` — that is the branch CI builds and cuts releases from, while `main` stays idle until the official public release.
 2. Make sure your changes are focused and documented.
 3. Run any relevant checks for the area you touched.
 4. Open a pull request with a clear summary and testing notes.

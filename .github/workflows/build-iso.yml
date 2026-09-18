@@ -15,12 +15,17 @@ concurrency:
   group: build-iso-${{ github.ref }}
   cancel-in-progress: true
 
+# Least privilege at workflow level; the release steps that actually need to
+# write (create the GitHub Release) opt in at job level below. The `test` job
+# only runs ShellCheck/Trivy over the repo, so it stays read-only.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     container:
       image: archlinux:latest
@@ -82,7 +87,23 @@ jobs:
           echo ""
 
           echo "Running ShellCheck..."
-          find . -type f -name '*.sh' -print0 | xargs -0 -r shellcheck
+          # Lint every shell script, not just *.sh. The privileged scripts in
+          # profile/airootfs/usr/local/bin/ (neos-pacstrap, neos-driver-manager,
+          # neos-secureboot-setup, ...) have no extension and were never linted.
+          # Select by shebang so the Python script (neos-welcome-app) is skipped
+          # and note that *.hook files are pacman/alpm INI config, not shell.
+          mapfile -t SHELL_SCRIPTS < <(
+            {
+              find . -type f -name '*.sh'
+              grep -rlE '^#!.*(bash|/bin/sh|dash|ksh)' profile/airootfs/usr/local/bin 2>/dev/null
+            } | sort -u
+          )
+          if (( ${#SHELL_SCRIPTS[@]} == 0 )); then
+            echo "::error::No shell scripts discovered to lint"
+            exit 1
+          fi
+          echo "ShellCheck: linting ${#SHELL_SCRIPTS[@]} script(s)"
+          shellcheck "${SHELL_SCRIPTS[@]}"
           echo "ShellCheck completed successfully."
           echo ""
 
@@ -97,6 +118,8 @@ jobs:
 
   build:
     needs: test
+    permissions:
+      contents: write
 
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -344,6 +367,7 @@ jobs:
           bash tests/verify_iso_grub.sh
           REQUIRE_ISO=1 bash tests/verify_iso_calamares_libs.sh
           bash tests/verify_iso_smoketest.sh
+          REQUIRE_ISO=1 bash tests/verify_iso_size.sh
       - name: Prepare ISO for upload
         id: iso
         if: contains(fromJSON('["refs/heads/main","refs/heads/testing"]'), github.ref)

@@ -110,9 +110,13 @@ if [[ "$SKIP_DOWNLOAD" == false ]]; then
         REPO_HAVE["$base"]="$f"
     done
 
+    # NOTE: use assignment form (VAR=$((VAR + 1))), never a bare ((VAR++)).
+    # Under `set -e` a post-increment evaluates to the OLD value, so the very
+    # first increment from 0 returns exit status 1 and aborts the whole script
+    # before any package is fetched.
     for pkg in "${PKGS[@]}"; do
         if [[ -n "${REPO_HAVE[$pkg]:-}" ]]; then
-            ((CACHED_COUNT++))
+            CACHED_COUNT=$((CACHED_COUNT + 1))
         else
             MISSING_PKGS+=("$pkg")
         fi
@@ -138,7 +142,7 @@ if [[ "$SKIP_DOWNLOAD" == false ]]; then
             for pkg in "${MISSING_PKGS[@]}"; do
                 if [[ -n "${CACHE_HAVE[$pkg]:-}" ]]; then
                     cp -n "${CACHE_HAVE[$pkg]}" "$REPO_DIR/" 2>/dev/null || true
-                    ((REUSED_COUNT++))
+                    REUSED_COUNT=$((REUSED_COUNT + 1))
                 else
                     DOWNLOAD_PKGS+=("$pkg")
                 fi
@@ -189,7 +193,7 @@ for f in "$REPO_DIR"/*.pkg.tar.zst; do
     done
     if [[ "$found" -eq 0 ]]; then
         rm -f "$f" "${f}.sig" 2>/dev/null || true
-        ((CLEANED++))
+        CLEANED=$((CLEANED + 1))
     fi
 done
 [[ "$CLEANED" -gt 0 ]] && echo "Cleaned $CLEANED stale package(s)"

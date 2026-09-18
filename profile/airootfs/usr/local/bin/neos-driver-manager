@@ -26,8 +26,7 @@ trap '_error_handler $? $LINENO' ERR
 # [SENTINEL] Audit temp file creation for kdialog
 REPORT_FILE="$(mktemp "${TMPDIR:-/tmp}/neos-driver-manager.XXXXXX")"
 trap 'rm -f "$REPORT_FILE"; _error_handler $? $LINENO' ERR
-exit_trap_cmd='rm -f "$REPORT_FILE"'
-trap "$exit_trap_cmd" EXIT
+trap 'rm -f "$REPORT_FILE"' EXIT
 
 {
 echo -e "\e[1m\e[36m🔍 NeOS Hardware Intelligence starting...\e[0m"

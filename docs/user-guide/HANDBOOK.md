@@ -65,7 +65,7 @@ If you want to modify NeOS or build your own ISO, follow these steps.
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/NimuthuGanegoda/NeOS.git
+git clone https://github.com/uthsarad/NeOS.git
 cd NeOS
 ```
 
@@ -78,12 +78,15 @@ sudo pacman -S archiso git
 ### 3. Build the ISO
 The build process requires root privileges because it mounts filesystems and creates device nodes.
 ```bash
-sudo mkarchiso -v -w work -o out .
+sudo ./build.sh
 ```
-*   `-v`: Verbose output.
-*   `-w work`: Directory for temporary work files.
-*   `-o out`: Directory for the final ISO image.
-*   `.`: The current directory (profile root).
+`build.sh` is the supported entrypoint: it generates the build `pacman.conf` and the Calamares netinstall manifests, runs `mkarchiso` against `profile/`, embeds the offline install package repository, and validates the resulting ISO.
+
+Invoking `mkarchiso` directly is possible but skips those steps — in particular the profile path is `profile/`, not the repository root:
+
+```bash
+sudo mkarchiso -v -w work -o out profile
+```
 
 Once finished, the ISO will be in the `out/` directory.
 
@@ -93,11 +96,11 @@ This repository is an **Archiso profile**. If you are new, focus on these key pa
 
 | Path | Purpose | When you should edit it |
 | --- | --- | --- |
-| `profiledef.sh` | Core Archiso profile settings (ISO label, publisher, build modes, file permissions). | You need to change identity, metadata, permissions, or boot profile behavior. |
+| `profile/profiledef.sh` | Core Archiso profile settings (ISO label, publisher, build modes, file permissions). | You need to change identity, metadata, permissions, or boot profile behavior. |
 | `build.sh` | Wrapper script to build the ISO with project defaults. | You want to change build flow (output/work directories, cleanup, build args). |
-| `packages.x86_64` | Package list for the supported architecture. | You are adding or removing software from the live image. |
-| `bootstrap_packages.*` | Minimal package sets used during bootstrap stages. | You are changing early build/bootstrap dependencies. |
-| `pacman.conf` | Package manager configuration for the build environment (repos, signatures, options). | Repositories or package trust configuration must change. |
+| `profile/packages.x86_64` | Package list for the supported architecture. | You are adding or removing software from the live image. |
+| `profile/bootstrap_packages.*` | Minimal package sets used during bootstrap stages (only consulted for `bootstrap` build modes). | You are changing early build/bootstrap dependencies. |
+| `profile/pacman.conf` | Package manager configuration for the build environment (repos, signatures, options). | Repositories or package trust configuration must change. |
 | `airootfs/` | Files copied directly into the live root filesystem. | You are changing system defaults, services, scripts, installer behavior, or branding. |
 | `grub/` and `syslinux/` | UEFI/BIOS bootloader menus and boot parameters. | You need to adjust boot entries, kernel parameters, or boot UX. |
 | `tests/` | Verification scripts for profile integrity and release gates. | You are validating or extending quality checks. |

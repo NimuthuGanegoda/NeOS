@@ -1,5 +1,13 @@
 # ISO Build Fix - VM Recognition Issue
 
+> **SUPERSEDED — historical record (2026-02-17).** The two-configuration model
+> described below is still accurate, but the sig-level values are not: the
+> installed system
+> (`profile/airootfs/etc/pacman.conf`) now uses `Required DatabaseOptional`, the
+> same policy as the build config, because Arch's official repos do not sign
+> their databases. `tools/neos-profile-audit` enforces that policy. The
+> `DatabaseRequired` values quoted throughout this document are historical.
+
 **Issue:** VM cannot recognize/load the NeOS ISO  
 **Root Cause:** ISO build was failing, preventing ISO creation  
 **Status:** FIXED

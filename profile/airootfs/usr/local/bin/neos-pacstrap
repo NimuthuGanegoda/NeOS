@@ -9,6 +9,10 @@
 #   OFFLINE: Install from the local ISO package repo at /run/archiso/bootmnt/neos/pkg/
 #            so the install completes without any network.
 #
+# The local repo is an OFFLINE-ONLY input. It is never added to the online path:
+# it is unsigned, and pacman takes a package from the first repo that provides
+# it, so including it there would outrank the signed mirror packages.
+#
 # The local repo is built by tools/gen-install-repo.sh during ISO creation and
 # embedded directly on the ISO at /neos/pkg/. It is accessible at
 # /run/archiso/bootmnt/neos/pkg/ when booted from the live ISO.
@@ -155,19 +159,15 @@ fi
 if [[ "$net_ok" -eq 1 ]]; then
     # ---- ONLINE: download fresh packages ----------------------------------
     log "⬇️  online install — downloading latest ${#PKGS[@]} packages from internet..."
-    # Build a combined pacman.conf: local repo first (highest priority) when available
+    # Use ONLY the signed repositories from /etc/pacman.conf. The local ISO repo
+    # is intentionally NOT prepended here: it is unsigned (TrustAll, see
+    # do_offline_install) and pacman resolves a package from the first repo that
+    # provides it, so a prepended local repo would let an unverified — and
+    # potentially stale — copy from the boot medium win over the signed current
+    # package from the mirrors. The local repo is the offline fallback only.
     TMP_PACMAN_CONF=$(mktemp /tmp/neos-pacman-conf-XXXXXX)
     trap 'rm -f "$TMP_PACMAN_CONF"' EXIT
-    if [[ -n "$LOCAL_REPO" ]]; then
-        {
-            echo "[neos-local]"
-            echo "SigLevel = Optional TrustAll"
-            echo "Server = file://${LOCAL_REPO}"
-            cat /etc/pacman.conf
-        } > "$TMP_PACMAN_CONF"
-    else
-        cp /etc/pacman.conf "$TMP_PACMAN_CONF"
-    fi
+    cp /etc/pacman.conf "$TMP_PACMAN_CONF"
     pacman -Sy --noconfirm --config "$TMP_PACMAN_CONF" 2>/dev/null || true
     if ! run_pacstrap_with_retry "$TMP_PACMAN_CONF"; then
         echo "neos-pacstrap: online install failed after $PACSTRAP_RETRIES attempts — check internet connection and retry" >&2

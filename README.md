@@ -14,7 +14,9 @@
 
 **NeOS** is a curated, snapshot-based Arch Linux desktop distribution engineered for predictable behavior, system stability, and a refined **KDE Plasma 6** experience. Designed for users transitioning from Windows, NeOS bridges the gap between the flexibility of a rolling release and the reliability of a validated workstation environment.
 
-It ships as a full **live installer** — boot into a working desktop, try it, then install offline with the Calamares wizard, the same model as a mainstream desktop OS.
+It ships as a full **live installer** — boot into a working desktop, try it, then install with the Calamares wizard, the same model as a mainstream desktop OS.
+
+> **Installing without a network:** an ISO built locally with `sudo ./build.sh` embeds an offline package repository, so the installer completes with no internet connection. The cloud-built ISOs published to Releases are produced by a different build path that does not embed that repository, so installing from a released ISO requires a network connection.
 
 ---
 
@@ -78,7 +80,7 @@ Because NeOS is a curated distribution, every release is exercised before it rea
 
 *   **Boot validation** — the ISO is booted (BIOS and UEFI) to confirm it reaches the live desktop, including in virtual machines (VMware, VirtualBox, QEMU/KVM).
 *   **Installer validation** — the Calamares flow is run end-to-end so installs complete and reboot into a working system.
-*   **Automated build gates (CI)** — every push to `main` runs ShellCheck, Trivy, config checks, and a chroot verification that the installer's libraries resolve, so a broken installer fails the build instead of shipping.
+*   **Automated build gates (CI)** — every push to `testing` runs ShellCheck, Trivy, config checks, and a chroot verification that the installer's libraries resolve, so a broken installer fails the build instead of shipping.
 
 > CI cannot boot a desktop or run an interactive install on its own, so hardware/VM smoke testing by the QA team is the final gate before a release is trusted.
 
@@ -103,7 +105,7 @@ Comprehensive documentation is available in the `docs/` directory:
 3.  **Boot & Try:** Boot the USB to explore the live KDE Plasma desktop.
 4.  **Install:** Launch **Install NeOS** and follow the curated Calamares installation wizard.
 
-*Note: The ISO is automatically built in the cloud upon every push to the main branch.*
+*Note: The ISO is automatically built in the cloud upon every push to the `testing` branch, which is the branch releases are currently cut from. `main` is intentionally idle until the official public release.*
 
 ---
 

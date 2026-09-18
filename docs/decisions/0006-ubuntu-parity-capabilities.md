@@ -19,7 +19,7 @@ We will adopt Ubuntu-equivalent capabilities using Arch packages, applying a **t
    - Firmware: `fwupd`
    - App store: `flatpak` (backend for Discover)
    - Fonts: `noto-fonts-cjk` (CJK language support)
-   - NVIDIA: `nvidia-dkms` (kernel module compilation support)
+   - NVIDIA: `nvidia-open-dkms` (kernel module compilation support)
    - Secure Boot: `sbctl`, `mokutil`, `efitools` + `neos-secureboot-setup` helper
    - Hardware/connectivity: `thermald`, `modemmanager`, `networkmanager-openvpn`, `sane`, `sane-airscan`
 
@@ -41,6 +41,6 @@ This two-tier approach allows us to deliver Ubuntu-parity features to the instal
 
 **Acceptance criteria met:**
 - Ubuntu parity achieved for firmware, accessibility, app distribution, GPU, thermal, WWAN, and scanner support.
-- 2 GiB ISO limit enforced (accessibility live-support requires zero packages beyond the lean speech stack).
+- 2 GiB ISO limit enforced by `tests/verify_iso_size.sh`, which fails the release build when the newest ISO exceeds the gate (accessibility live-support requires zero packages beyond the lean speech stack).
 - Live accessibility is functional (screen reader works in live session).
 - Secure Boot helpers prevent brick risk via user-initiated approach.
