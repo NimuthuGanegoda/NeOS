@@ -160,3 +160,8 @@ linux-firmware-other
 aic94xx-firmware
 wd719x-firmware
 upd72020x-fw
+linux-firmware-mellanox
+linux-firmware-bnx2x
+linux-firmware-liquidio
+linux-firmware-nfp
+broadcom-wl
