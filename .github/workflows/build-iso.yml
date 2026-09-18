@@ -417,7 +417,8 @@ jobs:
             BRANCH_SUFFIX="-${{ github.ref_name }}"
           fi
           VERSION="$(tr -d '[:space:]' < VERSION)"
-          TAG_VAL="v${VERSION}-$(date +%Y%m%d)-${{ github.run_number }}${BRANCH_SUFFIX}"
+          # Inject codename into tag to make it readable in the UI and SourceForge URLs
+          TAG_VAL="v${VERSION}-${{ steps.codename.outputs.value }}-b${{ github.run_number }}${BRANCH_SUFFIX}"
           echo "value=$TAG_VAL" >> "$GITHUB_OUTPUT"
 
           # Release body = the CHANGELOG section for this VERSION (empty file
