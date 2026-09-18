@@ -85,6 +85,6 @@ echo "Generating NeOS overlay manifest -> $NETINSTALL_OVERLAY"
     -e '^usr/local/bin/neos-pacstrap$' \
     -e '__pycache__' \
     -e '\.py[co]$' \
-    | sort > "$NETINSTALL_OVERLAY"
+    | LC_ALL=C sort > "$NETINSTALL_OVERLAY"
 
 echo "Generated $(wc -l < "$NETINSTALL_OVERLAY") overlay entries"

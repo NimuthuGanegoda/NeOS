@@ -1,7 +1,7 @@
+etc/NetworkManager/conf.d/wifi_backend.conf
 etc/default/grub
 etc/modules-load.d/neos-networking.conf
 etc/modules-load.d/neos-vm.conf
-etc/NetworkManager/conf.d/wifi_backend.conf
 etc/os-release
 etc/plymouth/plymouthd.conf
 etc/polkit-1/rules.d/50-neos-packagekit.rules
