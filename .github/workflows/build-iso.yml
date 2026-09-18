@@ -503,7 +503,7 @@ jobs:
           
           echo "Creating target directory $TARGET_DIR on SourceForge..."
           # SourceForge allows creating directories via SSH
-          ssh -o StrictHostKeyChecking=no "${SOURCEFORGE_USERNAME}@frs.sourceforge.net" "create" || echo "Note: Sourceforge shell is restricted, relying on rsync to create dirs."
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${SOURCEFORGE_USERNAME}@frs.sourceforge.net" "create" || echo "Note: Sourceforge shell is restricted, relying on rsync to create dirs."
 
           echo "Uploading release assets to $TARGET_DIR..."
 
@@ -513,7 +513,7 @@ jobs:
             # Using --rsync-path="mkdir -p ${TARGET_DIR} && rsync" is another trick, but 
             # rsync with --mkpath or just standard rsync to a non-existent dir might work on FRS.
             # However, SourceForge FRS sometimes auto-creates paths if you use standard rsync
-            if rsync -avP -e "ssh -o StrictHostKeyChecking=no" sf_release/ "${SOURCEFORGE_USERNAME}@frs.sourceforge.net:${TARGET_DIR}/"; then
+            if rsync -avP -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" sf_release/ "${SOURCEFORGE_USERNAME}@frs.sourceforge.net:${TARGET_DIR}/"; then
               echo "Assets uploaded successfully to SourceForge."
               break
             fi
