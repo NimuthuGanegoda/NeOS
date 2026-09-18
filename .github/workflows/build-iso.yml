@@ -413,6 +413,8 @@ jobs:
       - name: Generate release tag and notes
         id: tag
         if: contains(fromJSON('["refs/heads/main","refs/heads/testing"]'), github.ref)
+        env:
+          SOURCEFORGE_PROJECT: ${{ secrets.SOURCEFORGE_PROJECT }}
         run: |
           set -euo pipefail
 
@@ -432,7 +434,8 @@ jobs:
             BRANCH_SUFFIX="-${{ github.ref_name }}"
           fi
           VERSION="$(tr -d '[:space:]' < VERSION)"
-          echo "value=v${VERSION}-$(date +%Y%m%d)${BRANCH_SUFFIX}" >> "$GITHUB_OUTPUT"
+          TAG_VAL="v${VERSION}-$(date +%Y%m%d)${BRANCH_SUFFIX}"
+          echo "value=$TAG_VAL" >> "$GITHUB_OUTPUT"
 
           # Release body = the CHANGELOG section for this VERSION (empty file
           # if the section is missing; generate_release_notes still fills in
@@ -442,6 +445,11 @@ jobs:
             /^## \[/ { flag = 0 }
             flag { print }
           ' CHANGELOG.md > release-body.md
+
+          if [[ -n "${SOURCEFORGE_PROJECT:-}" ]]; then
+            SF_URL="https://sourceforge.net/projects/${SOURCEFORGE_PROJECT}/files/${{ github.ref_name }}/${TAG_VAL}/"
+            echo -e "\n---\n\n### 💿 Download ISO Assets\n\n**[➡️ Download ISOs and release assets from SourceForge]($SF_URL)**\n" >> release-body.md
+          fi
 
           echo "Release body:"
           cat release-body.md
