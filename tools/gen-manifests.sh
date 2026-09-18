@@ -83,6 +83,7 @@ echo "Generating NeOS overlay manifest -> $NETINSTALL_OVERLAY"
     -e '^etc/sddm\.conf\.d/00-allow-empty-password\.conf$' \
     -e '^usr/local/bin/neos-liveuser-setup$' \
     -e '^usr/local/bin/neos-pacstrap$' \
+    -e '^usr/local/bin/chcon$' \
     -e '__pycache__' \
     -e '\.py[co]$' \
     | LC_ALL=C sort > "$NETINSTALL_OVERLAY"

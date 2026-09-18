@@ -1,12 +1,6 @@
 name: Auto-merge Jules
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
-    branches: [testing]
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-    branches: [testing]
   pull_request_review:
     types: [submitted]
   workflow_dispatch:
@@ -22,36 +16,29 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    # SECURITY: workflow_dispatch runs require write access to the repository, so allow them
-    # explicitly (branch-agnostic — a human explicitly named the PR); PR-triggered runs remain
-    # limited to known actors, approved reviews, AND (2026-09-12) PRs targeting `testing` only.
-    # `main` is meant to only move via the repo owner's own manual merge from `testing` — see
-    # ARCHITECT_SCOPE.json's strategic_pause history for why bot PRs landing straight on main
-    # unattended is the thing to avoid. The `branches: [testing]` filter above already covers
-    # pull_request/pull_request_target; pull_request_review doesn't support a branches filter
-    # in the trigger syntax, so it's checked here instead via the PR's base ref.
+    # SECURITY (2026-09-18): re-gated on pull_request_review + approved, per the repo owner's
+    # explicit direction, superseding the 2026-09-11 revert noted below. The allow-listed-actor
+    # bypass that let pull_request/pull_request_target auto-merge on open (no real review) is
+    # removed: a compromised or impersonated allow-listed account could previously land arbitrary
+    # CI changes unreviewed via JULES_AUTO_MERGE_TOKEN (repo+workflow scope). Merge now requires
+    # an actual "Approved" review from an OWNER/MEMBER/COLLABORATOR on a PR targeting `testing`,
+    # or an explicit workflow_dispatch by someone with write access. `main` still only moves via
+    # the repo owner's own manual merge from `testing` — see ARCHITECT_SCOPE.json's
+    # strategic_pause history for why bot PRs landing straight on main unattended is the thing
+    # to avoid.
     #
-    # NOTE (2026-09-11): a human-review-only gate was tried here and reverted at the repo
-    # owner's explicit request — restored self-approve/auto-merge for the allow-listed bot
-    # actors below. This is a known re-introduction of the mechanism that previously drove
-    # bots to merge trivial "acknowledge pause" PRs with nobody looking at them. If that loop
-    # recurs, the fix is to re-gate this on pull_request_review + approved, not to add more
-    # allow-listed actors.
+    # HISTORY (2026-09-11): a human-review-only gate was tried here and reverted at the repo
+    # owner's request, restoring self-approve/auto-merge for allow-listed bot actors — that is
+    # the exact mechanism that previously drove bots to merge trivial "acknowledge pause" PRs
+    # with nobody looking at them. Do not reintroduce an actor allow-list bypass here; if the
+    # review-approval gate below is too slow for trusted bots, scope a narrower exception
+    # explicitly rather than bypassing review entirely.
     if: >-
-      (github.event_name == 'workflow_dispatch' ||
-       github.actor == 'google-labs-jules[bot]' ||
-       github.actor == 'google-labs-jules' ||
-       github.actor == 'NimuthuGanegoda' ||
-       github.actor == 'RaidenShogun-AI' ||
-       github.actor == 'MikoYae-AI' ||
-       github.event.pull_request.user.login == 'google-labs-jules[bot]' ||
-       github.event.pull_request.user.login == 'google-labs-jules' ||
-       github.event.pull_request.user.login == 'NimuthuGanegoda' ||
-       github.event.pull_request.user.login == 'RaidenShogun-AI' ||
-       github.event.pull_request.user.login == 'MikoYae-AI' ||
-       github.actor == github.repository_owner) &&
-      (github.event_name != 'pull_request_review' ||
-       (github.event.review.state == 'approved' && github.event.pull_request.base.ref == 'testing'))
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request_review' &&
+       github.event.review.state == 'approved' &&
+       github.event.pull_request.base.ref == 'testing' &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.review.author_association))
     steps:
       - name: Auto-merge
         # Bolt: Removed actions/checkout as the gh CLI is API-driven and does not need local repo context
