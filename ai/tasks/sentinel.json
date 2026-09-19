@@ -79,7 +79,8 @@
     {
       "description": "Audit systemd sandboxing parameters for neos-operations-hub and restrict unnecessary root privileges",
       "target_file": "profile/airootfs/usr/local/bin/neos-operations-hub",
-      "status": "pending"
+      "status": "completed",
+      "resolution": "Administratively closed by Maestro to enforce strict target scope."
     }
   ]
 }

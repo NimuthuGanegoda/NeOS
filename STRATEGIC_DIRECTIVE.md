@@ -23,7 +23,7 @@ Maestro coordinates priorities and work allocation among the three specialist ag
 ### 2. Palette (UX, Theming & Accessibility)
 * **Domain:** Desktop experience, accessibility, typography, and clean user feedback.
 * **Scope:**
- * Polish keyboard navigation, tab order, and active focus styling across `neos-welcome-app` and `neos-operations-hub`.
+ * Polish keyboard navigation, tab order, and active focus styling across `neos-welcome-app`.
  * Ensure user-facing CLI and GUI utilities provide clear error messages and next-step troubleshooting guidance.
  * Maintain clean, consistent KDE Plasma 6 visuals without visual bloat or unneeded ornamentation.
 * **Prohibitions:** Do not introduce unvetted third-party graphical libraries or heavy assets.
@@ -42,10 +42,7 @@ Maestro coordinates priorities and work allocation among the three specialist ag
 | Specialist | Target Path | Task Objective |
 | :--- | :--- | :--- |
 | **Bolt** | `build.sh` | Profile and eliminate redundant subprocess invocations in the build/packaging loop. |
-| **Bolt** | `profile/airootfs/usr/local/bin/neos-pacstrap` | Optimize mirror verification concurrency to accelerate live-media bootstrapping. |
 | **Palette** | `profile/airootfs/usr/local/bin/neos-welcome-app` | Audit keyboard navigation and ensure high-contrast focus rings on interactive elements. |
-| **Palette** | `profile/airootfs/usr/local/bin/neos-driver-manager` | Format CLI error handling with actionable troubleshooting suggestions. |
 | **Sentinel** | `profile/airootfs/usr/local/bin/neos-autoupdate.sh` | Audit temporary file creation and secure permissions against CWE-59 vulnerabilities. |
-| **Sentinel** | `profile/airootfs/usr/local/bin/neos-operations-hub` | Audit systemd sandboxing parameters and restrict unnecessary root privileges. |
 
 *Coordinated by Maestro - Updated 2026-09-19*

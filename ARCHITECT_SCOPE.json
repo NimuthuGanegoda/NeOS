@@ -1,9 +1,8 @@
 {
   "allowed_files": [
     "build.sh",
-    "profile/airootfs/usr/local/bin/*",
-    "tools/*",
-    "tests/*"
+    "profile/airootfs/usr/local/bin/neos-welcome-app",
+    "profile/airootfs/usr/local/bin/neos-autoupdate.sh"
   ],
   "strategic_pause": false,
   "constraints": [
@@ -11,5 +10,5 @@
     "Favor minimal, test-covered changes over wide refactors.",
     "Maintain strict backward compatibility with existing NeOS configurations."
   ],
-  "maestro_timestamp": "2026-09-19T10:55:00Z"
+  "maestro_timestamp": "2026-09-19T11:00:00Z"
 }

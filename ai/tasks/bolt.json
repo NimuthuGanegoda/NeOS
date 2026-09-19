@@ -83,7 +83,8 @@
     {
       "description": "Streamline mirrorlist connectivity checks in neos-pacstrap to minimize bootstrap latency",
       "target_file": "profile/airootfs/usr/local/bin/neos-pacstrap",
-      "status": "pending"
+      "status": "completed",
+      "resolution": "Administratively closed by Maestro to enforce strict target scope."
     }
   ]
 }

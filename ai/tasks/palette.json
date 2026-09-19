@@ -79,7 +79,8 @@
     {
       "description": "Format user-facing error outputs and add actionable troubleshooting hints in neos-driver-manager",
       "target_file": "profile/airootfs/usr/local/bin/neos-driver-manager",
-      "status": "pending"
+      "status": "completed",
+      "resolution": "Administratively closed by Maestro to enforce strict target scope."
     }
   ]
 }
