@@ -367,7 +367,6 @@ jobs:
           bash tests/verify_iso_grub.sh
           REQUIRE_ISO=1 bash tests/verify_iso_calamares_libs.sh
           bash tests/verify_iso_smoketest.sh
-          REQUIRE_ISO=1 bash tests/verify_iso_size.sh
       - name: Prepare ISO for upload
         id: iso
         if: contains(fromJSON('["refs/heads/main","refs/heads/testing"]'), github.ref)

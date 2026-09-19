@@ -41,6 +41,6 @@ This two-tier approach allows us to deliver Ubuntu-parity features to the instal
 
 **Acceptance criteria met:**
 - Ubuntu parity achieved for firmware, accessibility, app distribution, GPU, thermal, WWAN, and scanner support.
-- 2 GiB ISO limit enforced by `tests/verify_iso_size.sh`, which fails the release build when the newest ISO exceeds the gate (accessibility live-support requires zero packages beyond the lean speech stack).
+- ~~2 GiB ISO limit enforced by `tests/verify_iso_size.sh`~~ — superseded: the size gate was removed when releases moved to SourceForge (no per-asset limit). The two-tier split still applies for RAM and install-time reasons.
 - Live accessibility is functional (screen reader works in live session).
 - Secure Boot helpers prevent brick risk via user-initiated approach.

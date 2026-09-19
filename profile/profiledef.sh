@@ -19,7 +19,8 @@ airootfs_image_type="squashfs"
 # every binary launch in the live session paid a CPU cost — painful in a VM on
 # software rendering. zstd decompresses several times faster (snappier live
 # desktop) at the same speed regardless of level, so we use the max level (22)
-# to keep the image as small as possible and stay under the 2048 MiB release gate.
+# to keep the image as small as possible (there is no ISO size gate; releases go to
+# SourceForge, which has no per-asset limit).
 airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '22' '-b' '1M')
 
 file_permissions=(
