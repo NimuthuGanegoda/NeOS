@@ -194,21 +194,7 @@ gleam
 elixir
 odin
 crystal
-kotlin
-sbcl
-clisp
-ghc
-fpc
 # --- heavy desktop applications and drivers (installed-system only) ---
-firefox
-discover
-packagekit-qt6
-cups
 print-manager
-fwupd
-flatpak
 noto-fonts-cjk
-nvidia-open-dkms
-dkms
-linux-lts-headers
-broadcom-wl-dkms
+nvidia-open-lts

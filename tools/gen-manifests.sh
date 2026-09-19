@@ -30,22 +30,28 @@ echo "Generating netinstall package list -> $NETINSTALL_PKGS"
     grep -vE '^\s*(#|$)' "$PROFILE_DIR/packages.x86_64" \
         | grep -vxE 'mkinitcpio-archiso|calamares-garuda'
     # Developer toolchains — INSTALLED-SYSTEM ONLY (deliberately NOT in the
-    # size-gated live ISO's packages.x86_64): modern languages so a fresh NeOS
+    # live ISO's packages.x86_64): modern languages so a fresh NeOS
     # install is dev-ready out of the box. three.js is an npm library, not a
     # system package — `npm install three` once nodejs/npm are present.
+    # kotlin/sbcl/clisp/ghc/fpc are intentionally absent: their only consumers
+    # (the tools/polyglot auditors) were removed in 2026.09.11, and ghc alone
+    # inflates the pacstrap transaction by over a GiB.
     echo "# --- developer languages and frameworks (installed-system only) ---"
     printf '%s\n' \
         nodejs npm python-pip rust go deno base-devel \
         jdk-openjdk ruby php composer dotnet-sdk \
         clang cmake ninja gdb docker docker-compose \
-        zig nim bun gleam elixir odin crystal \
-        kotlin sbcl clisp ghc fpc
+        zig nim bun gleam elixir odin crystal
 
+    # Extras not in the live list. nvidia-open-lts is the PREBUILT module for
+    # linux-lts (the only kernel NeOS ships). nvidia-open-dkms would compile the
+    # kernel module inside the live session during pacstrap — a multi-GiB RAM
+    # and CPU spike inside the RAM-backed installer, wasted on machines with no
+    # NVIDIA GPU. dkms/linux-lts-headers stay in the live list for
+    # broadcom-wl-dkms, which is tiny to build.
     echo "# --- heavy desktop applications and drivers (installed-system only) ---"
     printf '%s\n' \
-        firefox discover packagekit-qt6 cups print-manager \
-        fwupd flatpak noto-fonts-cjk nvidia-open-dkms dkms \
-        linux-lts-headers broadcom-wl-dkms
+        print-manager noto-fonts-cjk nvidia-open-lts
 } > "$NETINSTALL_PKGS"
 
 # Generate the NeOS overlay manifest that Calamares copies onto the target

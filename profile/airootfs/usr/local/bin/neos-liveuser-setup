@@ -57,6 +57,22 @@ if [ -d "$LIVE_USER_HOME" ]; then
         fi
     fi
 
+    # Trim the live session's login-time memory spike. The live medium is
+    # read-only squashfs plus a RAM-backed overlay, so anything that scans or
+    # refreshes at login competes with the desktop for the same RAM:
+    #   - Discover's update notifier resident-polls PackageKit/Flatpak and forces
+    #     an AppStream metadata refresh; there is nothing to update on a live ISO.
+    #   - Baloo would index the live user's home into the RAM overlay.
+    # Per-user overrides only — the installed system keeps both defaults.
+    for f in "$AUTOSTART_DIR/org.kde.discover.notifier.desktop" "$LIVE_USER_HOME/.config/baloofilerc"; do
+        if [[ -L "$f" ]]; then
+            echo "Security error: $f is a symlink. Aborting." >&2
+            exit 1
+        fi
+    done
+    printf '[Desktop Entry]\nHidden=true\n' > "$AUTOSTART_DIR/org.kde.discover.notifier.desktop"
+    printf '[Basic Settings]\nIndexing-Enabled=false\n' > "$LIVE_USER_HOME/.config/baloofilerc"
+
     # In a VM there is no usable GPU. Plasma on Wayland has NO uncomposited mode,
     # so KWin tries to composite through llvmpipe and the whole session locks up:
     # the desktop paints once but input is never serviced — buttons appear dead.
