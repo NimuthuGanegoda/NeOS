@@ -1,27 +1,51 @@
 # Strategic Directive
 
-## PHASE 1 — Product Alignment Check
-- **Product Goal:** A curated, snapshot-based Arch Linux desktop distribution engineered for predictable behavior, system stability, and a refined KDE Plasma 6 experience, designed for users transitioning from Windows.
-- **Alignment:** Ensure the Operations Hub functions correctly and securely. However, we have pending validation and refinement tasks in the specialist queues.
-- **Leverage:** The highest leverage action is to clear the pending validation and refinement queue before introducing any new features.
+## Core Operating Standard
+- **Product Vision:** NeOS — a curated, snapshot-based Arch Linux desktop distribution engineered for predictable behavior, fast boot, system stability, and a refined KDE Plasma 6 experience for users transitioning from Windows.
+- **Anti-Slop Rule:** 
+  - **No Meta-Work:** Do not open pull requests that only acknowledge directives, update status manifests, or commit empty reports.
+  - **Code Deliverables Only:** Every automated session must produce tangible, scoped, test-backed code or configuration improvements directly in target files.
+  - **No Endless Pause Loops:** No strategic pause or validation pause commits. If there is nothing to build or fix, do not commit.
 
-## PHASE 2 — Technical Posture Review
-- **Stability:** The system is stable, but specialists have pending work for recent Phase 8 Operations Hub refinements.
-- **Tech Debt:** Low, but pending specialist tasks must be cleared.
-- **Overbuilding:** Prevented by enforcing a strict Strategic Pause.
+---
 
-## PHASE 3 — Priority Selection
-- **Priority:** No-build day (strategic pause).
+## Maestro Coordination & Role Separation
+Maestro coordinates priorities and work allocation among the three specialist agents to ensure tasks do not conflict:
 
-## PHASE 4 — Controlled Scope Definition
-- **Impacted Files:** None.
-- **Maximum Surface Area:** None.
-- **Constraints:** Architect must not write any production code. Acknowledge the Strategic Pause.
+### 1. Bolt ⚡ (Performance & Efficiency)
+* **Domain:** Runtime speed, ISO build times, resource efficiency, and minimal overhead.
+* **Scope:**
+  * Eliminate subshell execution overhead and redundant forks in `build.sh` and shell utilities.
+  * Optimize package downloading, caching, and filesystem compression during ISO generation.
+  * Benchmark boot timing and live-session initialization scripts.
+* **Prohibitions:** Do not alter security sandboxing or modify UI themes without coordination.
 
-## PHASE 5 — Delegation Strategy
-- **Architect:** Acknowledge the Strategic Pause. Do not build new features.
-- **Bolt:** Clear pending task: Acknowledge the continued Phase 8 Validation Strategic Pause.
-- **Palette:** Clear pending task: Acknowledge the continued Phase 8 Validation Strategic Pause.
-- **Sentinel:** Clear pending task: Acknowledge the continued Phase 8 Validation Strategic Pause.
+### 2. Palette 🎨 (UX, Theming & Accessibility)
+* **Domain:** Desktop experience, accessibility, typography, and clean user feedback.
+* **Scope:**
+  * Polish keyboard navigation, tab order, and active focus styling across `neos-welcome-app` and `neos-operations-hub`.
+  * Ensure user-facing CLI and GUI utilities provide clear error messages and next-step troubleshooting guidance.
+  * Maintain clean, consistent KDE Plasma 6 visuals without visual bloat or unneeded ornamentation.
+* **Prohibitions:** Do not introduce unvetted third-party graphical libraries or heavy assets.
 
-*Report generated on 2026-09-18T23:25:36Z*
+### 3. Sentinel 🛡️ (Security & Hardening)
+* **Domain:** Privilege boundaries, system hardening, defensive scripting, and vulnerability mitigation.
+* **Scope:**
+  * Audit file permissions and prevent insecure temporary file handling in scripts (`profile/airootfs/usr/local/bin/`).
+  * Ensure systemd service units adhere to principle of least privilege (`ProtectSystem`, `NoNewPrivileges`, `ProtectHome`).
+  * Validate and sanitize all user and environment inputs in administrative utilities.
+* **Prohibitions:** Do not break essential desktop/system services by over-restricting filesystem access.
+
+---
+
+## Active Coordination Matrix
+| Specialist | Target Path | Task Objective |
+| :--- | :--- | :--- |
+| **Bolt** | `build.sh` | Profile and eliminate redundant subprocess invocations in the build/packaging loop. |
+| **Bolt** | `profile/airootfs/usr/local/bin/neos-pacstrap` | Optimize mirror verification concurrency to accelerate live-media bootstrapping. |
+| **Palette** | `profile/airootfs/usr/local/bin/neos-welcome-app` | Audit keyboard navigation and ensure high-contrast focus rings on interactive elements. |
+| **Palette** | `profile/airootfs/usr/local/bin/neos-driver-manager` | Format CLI error handling with actionable troubleshooting suggestions. |
+| **Sentinel** | `profile/airootfs/usr/local/bin/neos-autoupdate.sh` | Audit temporary file creation and secure permissions against CWE-59 vulnerabilities. |
+| **Sentinel** | `profile/airootfs/usr/local/bin/neos-operations-hub` | Audit systemd sandboxing parameters and restrict unnecessary root privileges. |
+
+*Coordinated by Maestro — Updated 2026-09-19*

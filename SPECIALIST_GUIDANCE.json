@@ -1,12 +1,19 @@
 {
+  "maestro_coordination": {
+    "role": "Lead Orchestrator",
+    "rule": "Enforce strict separation of duties between Bolt, Palette, and Sentinel. Reject any meta-reports, dummy pause acknowledgments, or commits without real code improvements."
+  },
   "bolt": {
-    "guidance": "Clear pending task: Acknowledge the continued Phase 8 Validation Strategic Pause"
+    "role": "Performance & Efficiency",
+    "guidance": "Focus on real code optimizations in build.sh and core shell scripts. Eliminate subshell fork overhead, streamline loop execution, and profile packaging bottlenecks."
   },
   "palette": {
-    "guidance": "Clear pending task: Acknowledge the continued Phase 8 Validation Strategic Pause"
+    "role": "UX, Theming & Accessibility",
+    "guidance": "Refine keyboard accessibility and focus navigation in neos-welcome-app and operations hub. Improve CLI error readability and actionable next-steps for the user."
   },
   "sentinel": {
-    "guidance": "Clear pending task: Acknowledge the continued Phase 8 Validation Strategic Pause"
+    "role": "Security & Hardening",
+    "guidance": "Harden shell script input sanitization, verify secure temporary file handling (avoid CWE-59), and ensure systemd services adhere to least privilege."
   },
-  "maestro_timestamp": "2026-09-18T23:25:36Z"
+  "maestro_timestamp": "2026-09-19T10:55:00Z"
 }

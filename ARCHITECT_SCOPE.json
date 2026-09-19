@@ -1,10 +1,15 @@
 {
-  "allowed_files": [],
-  "strategic_pause": true,
-  "constraints": [
-    "Halt all feature development.",
-    "Do not write production code.",
-    "Wait for Bolt, Palette, and Sentinel to clear pending validation tasks."
+  "allowed_files": [
+    "build.sh",
+    "profile/airootfs/usr/local/bin/*",
+    "tools/*",
+    "tests/*"
   ],
-  "maestro_timestamp": "2026-09-18T23:25:36Z"
+  "strategic_pause": false,
+  "constraints": [
+    "Autonomous code improvements only; no dummy commits or empty PRs.",
+    "Favor minimal, test-covered changes over wide refactors.",
+    "Maintain strict backward compatibility with existing NeOS configurations."
+  ],
+  "maestro_timestamp": "2026-09-19T10:55:00Z"
 }

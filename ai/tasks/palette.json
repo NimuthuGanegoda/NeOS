@@ -1,11 +1,6 @@
 {
   "tasks": [
     {
-      "description": "Baseline initialization",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
       "description": "Improve log output clarity in core scripts and refine error handling messages for better troubleshooting UX.",
       "target_file": "build.sh",
       "status": "completed"
@@ -27,11 +22,6 @@
       "status": "completed"
     },
     {
-      "description": "Standby for Phase 8 validation tasks.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
       "description": "Add screen reader accessible roles and names to interactive elements in SDDM theme Main.qml",
       "target_file": "profile/airootfs/usr/share/sddm/themes/neos/Main.qml",
       "status": "completed"
@@ -39,16 +29,6 @@
     {
       "description": "Verify UX accessibility of kdialog menus in neos-operations-hub.",
       "target_file": "profile/airootfs/usr/local/bin/neos-operations-hub",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge Phase 8 Operations Hub Validation (Strategic Pause). No new feature development from Architect.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge Continued Phase 8 Operations Hub Validation (Strategic Pause). No new feature development from Architect.",
-      "target_file": "none",
       "status": "completed"
     },
     {
@@ -67,110 +47,8 @@
       "status": "completed"
     },
     {
-      "description": "Acknowledge Phase 3 Validation (Strategic Pause). No new feature development from Architect.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Standby for Phase 4 UI implementations.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge Phase 4 Validation (Strategic Pause). No new feature development from Architect.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "id": "ack_strategic_pause_phase_4_continued",
-      "description": "Acknowledge the continued Strategic Pause for Phase 4 Validation. No new audits or enhancements.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "id": "ack_strategic_pause_phase_4_next",
-      "description": "Acknowledge the Phase 4 Validation pending tasks. No new UI/UX enhancements.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
       "description": "Verify UX accessibility and text wrapping for the new Phase 5 GUI in neos-driver-manager.",
       "target_file": "profile/airootfs/usr/local/bin/neos-driver-manager",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge the Phase 5 Validation Strategic Pause. No new UI/UX enhancements.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge the continued Phase 5 Validation Strategic Pause. No new UI/UX enhancements.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge the continued Phase 5 Validation Strategic Pause. No new UI/UX enhancements.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge the continued Phase 5 Validation Strategic Pause (2026-08-24). No new UI/UX enhancements.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge the continued Phase 5 Validation Strategic Pause (2026-08-25). No new UI/UX enhancements.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 5 Validation Strategic Pause.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 5 Validation Strategic Pause (2026-08-27).",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 5 Validation Strategic Pause (2026-08-28).",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 5 Validation Strategic Pause (2026-08-29).",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 5 Validation Strategic Pause (2026-08-30).",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 5 Validation Strategic Pause (2026-08-31).",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 5 Validation Strategic Pause (2026-09-01).",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 5 Validation Strategic Pause (2026-09-02).",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 5 Validation Strategic Pause (2026-09-03).",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 5 Validation Strategic Pause (2026-09-04).",
-      "target_file": "none",
       "status": "completed"
     },
     {
@@ -184,33 +62,8 @@
       "status": "completed"
     },
     {
-      "description": "Stand by for Phase 8 validation tasks.",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
       "description": "Refine the UX of the snapshot selection (e.g., provide a progress dialog during update execution instead of blocking the UI).",
       "target_file": "profile/airootfs/usr/local/bin/neos-operations-hub",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Acknowledge the continued Phase 8 Validation Strategic Pause (2026-09-08).",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Execute pending task: Refine UX of snapshot selection and Acknowledge the continued Phase 8 Validation Strategic Pause (2026-09-09).",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Refine UX of snapshot selection and Acknowledge the continued Phase 8 Validation Strategic Pause",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Validate Phase 8 Operations Hub snapshot rollback UX.",
-      "target_file": "none",
       "status": "completed"
     },
     {
@@ -219,29 +72,14 @@
       "status": "completed"
     },
     {
-      "description": "Ensure the crash reporting configuration menu in neos-operations-hub is intuitive and accessible, following Phase 6 UX guidelines.",
-      "target_file": "none",
-      "status": "completed"
+      "description": "Audit keyboard navigation, focus indicators, and tab order in neos-welcome-app",
+      "target_file": "profile/airootfs/usr/local/bin/neos-welcome-app",
+      "status": "pending"
     },
     {
-      "description": "Acknowledge the continued Phase 8 Validation Strategic Pause",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge the continued Phase 8 Validation Strategic Pause",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge the continued Phase 8 Validation Strategic Pause",
-      "target_file": "none",
-      "status": "completed"
-    },
-    {
-      "description": "Acknowledge the continued Phase 8 Validation Strategic Pause",
-      "target_file": "none",
-      "status": "completed"
+      "description": "Format user-facing error outputs and add actionable troubleshooting hints in neos-driver-manager",
+      "target_file": "profile/airootfs/usr/local/bin/neos-driver-manager",
+      "status": "pending"
     }
   ]
 }
