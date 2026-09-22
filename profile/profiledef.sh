@@ -4,7 +4,7 @@
 
 iso_name="neos"
 iso_label="NEOS_ISO"
-iso_publisher="NeOS Team <https://github.com/NimuthuGanegoda/NeOS>"
+iso_publisher="NeOS Team <https://github.com/uthsarad/NeOS>"
 iso_application="NeOS Installation Media"
 iso_version="$(date +%Y.%m.%d)"
 install_dir="neos"
@@ -40,5 +40,7 @@ file_permissions=(
   ["/usr/local/bin/neos-operations-hub"]="0:0:755"
   ["/usr/local/bin/neos-hardware-setup"]="0:0:755"
   ["/usr/local/bin/neos-display-sync"]="0:0:755"
+  ["/usr/local/bin/neos-autoinstall"]="0:0:755"
+  ["/usr/local/bin/neos-doctor"]="0:0:755"
   ["/usr/lib/calamares/modules/neospacstrap/main.py"]="0:0:755"
 )
