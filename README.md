@@ -103,7 +103,7 @@ Comprehensive documentation is available in the `docs/` directory:
 ## Quick Start
 
 1.  **Download the ISO:** Head to the **[Releases](https://github.com/uthsarad/NeOS/releases)** section and download the latest `neos-*-x86_64.iso`.
-    *Prefer BitTorrent?* Every release also ships a `.torrent` for the image (attached to the release and mirrored next to the ISO on SourceForge). It web-seeds straight from SourceForge, so it downloads fine even when no other peers are online — and it gets faster as the swarm grows.
+    *Prefer BitTorrent?* GitHub attaches a `.torrent` for the image to every release (also mirrored next to the ISO on SourceForge). It web-seeds straight from GitHub's CDN and SourceForge, so it downloads fine even when no other peers are online — and it gets faster as the swarm grows.
 2.  **Flash to USB:** Use Ventoy, Rufus, or BalenaEtcher.
 3.  **Boot & Try:** Boot the USB to explore the live KDE Plasma desktop.
 4.  **Install:** Launch **Install NeOS** and follow the curated Calamares installation wizard.
@@ -128,8 +128,8 @@ code path as the published one.
 
 Every build finishes by running `tools/gen-torrent.sh`, which writes a
 `<iso-name>.torrent` next to the image in `out/` (DHT + a default public
-tracker list). Release builds re-generate it in CI with the SourceForge
-download URLs added as web seeds before publishing.
+tracker list). Release builds re-generate it in CI with web seeds for the
+GitHub release asset and the SourceForge download URLs before publishing.
 
 ---
 

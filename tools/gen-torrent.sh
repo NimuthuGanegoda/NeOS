@@ -9,9 +9,10 @@
 #     the image in out/ (DHT + the default public tracker list, no web seeds).
 #   - .github/workflows/build-iso.yml, after the release-tag step: CI re-runs
 #     the generator with SOURCEFORGE_PROJECT/NEOS_RELEASE_TAG set, which adds
-#     the SourceForge download URLs as web seeds. The torrent therefore keeps
+#     the SourceForge download URLs as web seeds, plus the GitHub release
+#     asset URL via NEOS_TORRENT_WEB_SEEDS. The torrent therefore keeps
 #     working even with zero swarm peers — clients fall back to plain HTTP
-#     download from SourceForge until other peers appear.
+#     download from GitHub's CDN / SourceForge until other peers appear.
 #
 # Usage: gen-torrent.sh [options] [ISO_FILE]
 #
@@ -24,6 +25,10 @@
 #   --tracker URL      announce URL; repeatable, each URL becomes its own
 #                      tier (backup tracker). Overrides the default list.
 #   --no-trackers      write no announce list at all (DHT-only torrent)
+#   --web-seed URL     extra web seed (direct HTTP download) URL; repeatable.
+#                      Stacked on top of the SourceForge seeds — e.g. CI adds
+#                      the GitHub release asset URL so the torrent also pulls
+#                      from GitHub's CDN.
 #   --private          set the private flag (clients disable DHT/PEX; only
 #                      useful for restricted swarms, not for releases)
 #   --comment TEXT     comment field (default: "NeOS <iso basename>")
@@ -34,6 +39,8 @@
 # Environment:
 #   NEOS_TORRENT_TRACKERS     default tracker list override (comma and/or
 #                             space separated)
+#   NEOS_TORRENT_WEB_SEEDS    extra web seed URLs, appended after the CLI
+#                             --web-seed list (comma and/or space separated)
 #   NEOS_TORRENT_SOURCE_DIR   directory scanned for the newest ISO
 #                             (default: "out", relative to the repository root)
 #   SOURCEFORGE_PROJECT       SourceForge project name; when set together with
@@ -70,7 +77,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 usage() {
-    sed -n '2,47p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,54p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 # ---- Default public trackers ------------------------------------------------
@@ -92,12 +99,14 @@ NO_TRACKERS="false"
 COMMENT=""
 PIECE_SIZE=""
 declare -a CLI_TRACKERS=()
+declare -a CLI_WEB_SEEDS=()
 
 while (( $# > 0 )); do
     case "$1" in
         --output)      OUTPUT_DIR="${2:?--output needs a directory}"; shift 2 ;;
         --tracker)     CLI_TRACKERS+=("${2:?--tracker needs a URL}"); shift 2 ;;
         --no-trackers) NO_TRACKERS="true"; shift ;;
+        --web-seed)    CLI_WEB_SEEDS+=("${2:?--web-seed needs a URL}"); shift 2 ;;
         --private)     PRIVATE_FLAG="true"; shift ;;
         --comment)     COMMENT="${2:?--comment needs text}"; shift 2 ;;
         --piece-size)  PIECE_SIZE="${2:?--piece-size needs an exponent}"; shift 2 ;;
@@ -176,8 +185,25 @@ else
     printf '  - %s\n' "${TRACKERS[@]}"
 fi
 
-# ---- Web seeds (SourceForge) ---------------------------------------------------
+# ---- Web seeds -----------------------------------------------------------------
+# Order: explicit --web-seed URLs, then NEOS_TORRENT_WEB_SEEDS (CI adds the
+# GitHub release asset URL there), then the SourceForge download URLs when the
+# release environment provides them. Clients fall back among them, so the
+# torrent downloads even with zero swarm peers.
 declare -a WEB_SEEDS=()
+for seed in "${CLI_WEB_SEEDS[@]}"; do
+    WEB_SEEDS+=("$seed")
+done
+if [[ -n "${NEOS_TORRENT_WEB_SEEDS:-}" ]]; then
+    read -r -a ENV_WEB_SEEDS <<< "$(echo "$NEOS_TORRENT_WEB_SEEDS" | tr ',' ' ')"
+    if (( ${#ENV_WEB_SEEDS[@]} == 0 )); then
+        echo -e "${RED}Error: NEOS_TORRENT_WEB_SEEDS is set but contains no URLs.${NC}" >&2
+        exit 2
+    fi
+    for seed in "${ENV_WEB_SEEDS[@]}"; do
+        WEB_SEEDS+=("$seed")
+    done
+fi
 if [[ -n "${SOURCEFORGE_PROJECT:-}" && -n "${NEOS_RELEASE_TAG:-}" ]]; then
     SF_BRANCH="${NEOS_RELEASE_BRANCH:-testing}"
     SF_BASE="https://downloads.sourceforge.net/project/${SOURCEFORGE_PROJECT}/${SF_BRANCH}/${NEOS_RELEASE_TAG}"
@@ -189,10 +215,12 @@ if [[ -n "${SOURCEFORGE_PROJECT:-}" && -n "${NEOS_RELEASE_TAG:-}" ]]; then
         "${SF_BASE}/${ISO_BASENAME}"
         "https://sourceforge.net/projects/${SOURCEFORGE_PROJECT}/files/${SF_BRANCH}/${NEOS_RELEASE_TAG}/${ISO_BASENAME}/download"
     )
+fi
+if (( ${#WEB_SEEDS[@]} > 0 )); then
     echo "Web seeds (${#WEB_SEEDS[@]}):"
     printf '  - %s\n' "${WEB_SEEDS[@]}"
 else
-    echo "Web seeds: none (set SOURCEFORGE_PROJECT and NEOS_RELEASE_TAG to add SourceForge seeds)"
+    echo "Web seeds: none (pass --web-seed, or set SOURCEFORGE_PROJECT and NEOS_RELEASE_TAG to add SourceForge seeds)"
 fi
 
 # ---- Piece size ----------------------------------------------------------------

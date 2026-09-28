@@ -480,11 +480,13 @@ jobs:
 
       # build.sh already wrote a plain torrent (DHT + default public trackers)
       # next to the ISO. Re-generate it now that the release tag is known, with
-      # the SourceForge download URLs added as web seeds: the torrent then keeps
-      # working even with zero swarm peers, because clients fall back to plain
-      # HTTP download from SourceForge. The re-run must produce byte-identical
-      # info hashes — same image, same piece boundaries — only the seed/tracker
-      # metadata around them changes.
+      # two kinds of web seeds added:
+      #   1. The GitHub release asset URL for the ISO in this very release —
+      #      GitHub publishes the torrent alongside the ISO it points at, so
+      #      the swarm always has GitHub's CDN to pull from, secrets or not.
+      #   2. The SourceForge download URLs (when SOURCEFORGE_PROJECT exists).
+      # The re-run must produce an identical info hash — same image, same
+      # piece boundaries — only the seed/tracker metadata around it changes.
       - name: Generate release torrent
         if: contains(fromJSON('["refs/heads/main","refs/heads/testing"]'), github.ref)
         env:
@@ -495,6 +497,18 @@ jobs:
           set -euo pipefail
 
           cd "$GITHUB_WORKSPACE"
+
+          # Newest-image rule, same as build.sh/CI selection everywhere else.
+          ISO_FILE=$(find out -maxdepth 1 -name '*.iso' -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+          if [[ -z "$ISO_FILE" ]]; then
+            echo "::error::No ISO found in out/ to torrent"
+            exit 1
+          fi
+          ISO_BASENAME="$(basename "$ISO_FILE")"
+          # Web seed the asset of the release this step is about to publish:
+          # github.com/.../releases/download/<tag>/<iso> resolves to GitHub's
+          # CDN right after the next step creates the release.
+          export NEOS_TORRENT_WEB_SEEDS="https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.value }}/${ISO_BASENAME}"
 
           chmod +x tools/gen-torrent.sh
           ./tools/gen-torrent.sh

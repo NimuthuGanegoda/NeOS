@@ -9,13 +9,14 @@ All notable changes to this project will be documented in this file.
   build now ships a BitTorrent metainfo next to the ISO. `build.sh` generates
   one at the end of each build (DHT + a default public tracker list,
   size-matched piece size so the metainfo stays small); CI re-runs the
-  generator after the release-tag step with the SourceForge download URLs
-  added as web seeds, so the torrent keeps downloading even with zero swarm
-  peers (clients fall back to plain HTTP from SourceForge). The `.torrent` is
-  attached to the GitHub Release and mirrored next to the ISO on SourceForge.
-  Behavior is gated by the new `tests/verify_torrent.sh` (bencode-level
-  checks: newest-by-mtime ISO selection, tracker override/DHT-only modes,
-  web seeds, private flag, piece size, regeneration overwrite).
+  generator after the release-tag step with web seeds for the GitHub release
+  asset (GitHub's CDN — no secrets required) and the SourceForge download
+  URLs, so the torrent keeps downloading even with zero swarm peers (clients
+  fall back to plain HTTP). The `.torrent` is attached to the GitHub Release
+  and mirrored next to the ISO on SourceForge. Behavior is gated by the new
+  `tests/verify_torrent.sh` (bencode-level checks: newest-by-mtime ISO
+  selection, tracker override/DHT-only modes, web seeds, private flag, piece
+  size, regeneration overwrite).
 
 ## [2026.09.23] - 2026-09-23
 

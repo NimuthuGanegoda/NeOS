@@ -155,6 +155,23 @@ bash "$SCRIPT" --private --output "$WORK/out" "$WORK/src/neos-new-beta-x86_64.is
 assert_eq "private flag set in info dict" \
     "$(read_py "$WORK/out/neos-new-beta-x86_64.iso.torrent" "t[b'info'].get(b'private')")" "1"
 
+echo "Testing extra web seeds (--web-seed, NEOS_TORRENT_WEB_SEEDS)..."
+bash "$SCRIPT" --output "$WORK/out" \
+    --web-seed "https://mirror-a.example/neos.iso" \
+    --web-seed "https://mirror-b.example/neos.iso" \
+    "$WORK/src/neos-new-beta-x86_64.iso" >/dev/null
+SEEDS=$(read_py "$WORK/out/neos-new-beta-x86_64.iso.torrent" \
+    "b'|'.join(t.get(b'url-list', [])).decode()")
+assert_contains "first --web-seed embedded" "$SEEDS" "https://mirror-a.example/neos.iso"
+assert_contains "second --web-seed embedded" "$SEEDS" "https://mirror-b.example/neos.iso"
+
+NEOS_TORRENT_WEB_SEEDS="https://github.example/o/r/releases/download/v1/neos.iso, https://mirror-c.example/neos.iso" \
+    bash "$SCRIPT" --output "$WORK/out" "$WORK/src/neos-new-beta-x86_64.iso" >/dev/null
+SEEDS=$(read_py "$WORK/out/neos-new-beta-x86_64.iso.torrent" \
+    "b'|'.join(t.get(b'url-list', [])).decode()")
+assert_contains "env web seed (comma form) embedded" "$SEEDS" "https://github.example/o/r/releases/download/v1/neos.iso"
+assert_contains "env web seed appended after CLI seeds" "$SEEDS" "https://mirror-c.example/neos.iso"
+
 echo "Testing SourceForge web seeds via environment..."
 OUT=$(SOURCEFORGE_PROJECT="neos" NEOS_RELEASE_TAG="Marlin-b42-testing" NEOS_RELEASE_BRANCH="testing" \
     bash "$SCRIPT" --output "$WORK/out" "$WORK/src/neos-new-beta-x86_64.iso" 2>&1) || {
