@@ -364,10 +364,19 @@ jobs:
           cat /tmp/build-sh.log
           if (( rc != 0 )); then
             # Actions log-zip downloads fail for this repo; put the failure
-            # output into the step summary (check-run API: output.summary)
-            # and annotations. TEMPORARY debug aid — revert once diagnosed.
-            sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -v '^[[:space:]]*$' | tail -80 > "$GITHUB_STEP_SUMMARY" || true
-            sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -v '^[[:space:]]*$' | tail -45 | head -15 | while IFS= read -r line; do
+            # output into the step summary and annotations, which the checks
+            # API can always read. TEMPORARY debug aid — revert once the
+            # log-zip endpoint works again.
+            {
+              echo "### build.sh failure tail"
+              echo '```'
+              sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -v '^[[:space:]]*$' | tail -80
+              echo '```'
+            } > "${GITHUB_STEP_SUMMARY:-/tmp/no-summary.txt}" || true
+            sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -iE "^error:|failed (retrieving|to synchronize|to commit|to init)|invalid or corrupted" | head -6 | while IFS= read -r line; do
+              echo "::error::${line:0:350}"
+            done
+            sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -v '^[[:space:]]*$' | tail -25 | head -12 | while IFS= read -r line; do
               echo "::error::${line:0:350}"
             done
             exit "$rc"
