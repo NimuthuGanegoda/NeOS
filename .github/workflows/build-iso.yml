@@ -351,24 +351,44 @@ jobs:
       # packages (~hundreds of MiB plus a long download) has no place in the
       # release job. build.sh also runs the ISO validation gates itself.
       - name: "Build ISO (shared entrypoint: build.sh)"
+        env:
+          # The chaotic CDN intermittently 503s/404s (including short db
+          # repaint windows where chaotic-aur.db is briefly unfetchable), and
+          # a single failed sync used to fail the whole release. Retrying the
+          # full build after a cool-off rides out those windows; the per-URL
+          # curl retries injected into pacman-build.conf handle the blips in
+          # between.
+          BUILD_ATTEMPTS: 3
         run: |
           set -uo pipefail
 
           cd "$GITHUB_WORKSPACE"
 
-          set +e
-          bash build.sh --ci --no-offline-repo > /tmp/build-sh.log 2>&1
-          rc=$?
-          set -e
+          rc=1
+          for attempt in $(seq 1 "$BUILD_ATTEMPTS"); do
+            echo "::group::build attempt ${attempt}/${BUILD_ATTEMPTS}"
+            set +e
+            bash build.sh --ci --no-offline-repo > /tmp/build-sh.log 2>&1
+            rc=$?
+            set -e
+            cat /tmp/build-sh.log
+            echo "::endgroup::"
+            if (( rc == 0 )); then
+              break
+            fi
+            if (( attempt < BUILD_ATTEMPTS )); then
+              echo "::warning::build.sh failed (exit $rc) on attempt ${attempt}/${BUILD_ATTEMPTS} - retrying in 90s"
+              sleep 90
+            fi
+          done
 
-          cat /tmp/build-sh.log
           if (( rc != 0 )); then
             # Actions log-zip downloads fail for this repo; put the failure
             # output into the step summary and annotations, which the checks
             # API can always read, and upload the full log as a workflow
             # artifact. TEMPORARY debug aid — revert once log downloads work.
             {
-              echo "### build.sh failure (exit $rc)"
+              echo "### build.sh failure (exit $rc, after ${BUILD_ATTEMPTS} attempts)"
               echo
               echo '```'
               sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -v '^[[:space:]]*$' | tail -100
