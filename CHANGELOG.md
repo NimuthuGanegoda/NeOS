@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **ISO build no longer dies on transient CDN 5xx** (`tools/gen-build-conf.sh`):
+  `mkarchiso`'s package sync aborted wholesale when `cdn-mirror.chaotic.cx`
+  answered `chaotic-aur.db` with a 503 — pacman does not fail over to the next
+  `Server` entry on 5xx, so one CDN blip killed the build within seconds. The
+  generated `pacman-build.conf` now injects a curl `XferCommand` with
+  `--retry 8 --retry-all-errors`, absorbing the blips per URL and only then
+  falling through to the geo mirror.
+
 ### Added
 - **Automatic `.torrent` release artifact** (`tools/gen-torrent.sh`): every
   build now ships a BitTorrent metainfo next to the ISO. `build.sh` generates
