@@ -352,11 +352,26 @@ jobs:
       # release job. build.sh also runs the ISO validation gates itself.
       - name: "Build ISO (shared entrypoint: build.sh)"
         run: |
-          set -euo pipefail
+          set -uo pipefail
 
           cd "$GITHUB_WORKSPACE"
 
-          bash build.sh --ci --no-offline-repo
+          set +e
+          bash build.sh --ci --no-offline-repo > /tmp/build-sh.log 2>&1
+          rc=$?
+          set -e
+
+          cat /tmp/build-sh.log
+          if (( rc != 0 )); then
+            # Actions log-zip downloads fail for this repo; put the failure
+            # output into the step summary (check-run API: output.summary)
+            # and annotations. TEMPORARY debug aid — revert once diagnosed.
+            sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -v '^[[:space:]]*$' | tail -80 > "$GITHUB_STEP_SUMMARY" || true
+            sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -v '^[[:space:]]*$' | tail -45 | head -15 | while IFS= read -r line; do
+              echo "::error::${line:0:350}"
+            done
+            exit "$rc"
+          fi
 
       - name: Combine ISO parts if split
         run: |
