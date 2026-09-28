@@ -80,6 +80,12 @@ if ! command -v mksquashfs &> /dev/null; then
     exit 1
 fi
 
+if ! command -v mktorrent &> /dev/null; then
+    echo -e "${RED}Error: mktorrent could not be found. Please install 'mktorrent'.${NC}"
+    echo -e "${RED}       (a .torrent is generated for every build — see tools/gen-torrent.sh)${NC}"
+    exit 1
+fi
+
 # Configuration
 PROFILE_DIR="profile"
 WORK_DIR="work"
@@ -289,5 +295,14 @@ echo -e "${GREEN}Running ISO validation...${NC}"
 bash tests/verify_iso_grub.sh
 REQUIRE_ISO=1 bash tests/verify_iso_calamares_libs.sh
 bash tests/verify_iso_smoketest.sh
+
+# ---- Release torrent ---------------------------------------------------------
+# Every build ships a .torrent next to the ISO (tools/gen-torrent.sh): DHT plus
+# a default public tracker list, no web seeds. CI re-runs the generator after
+# the release-tag step with SourceForge credentials in the environment, which
+# regenerates the same torrent with SourceForge web seeds added — the local
+# copy here keeps `sudo ./build.sh` artifacts self-contained.
+echo -e "${GREEN}Generating release torrent...${NC}"
+bash tools/gen-torrent.sh
 
 echo -e "${GREEN}Build complete! ISO is in $OUT_DIR${NC}"

@@ -55,8 +55,9 @@ jobs:
         # REQUIRE_TOOLS=1 below turns a missing toolchain into a failure rather
         # than a silent skip.
         #   pacman-contrib -> repo-add, used by verify_install_repo.sh
+        #   mktorrent      -> verify_torrent.sh (exercises the .torrent generator)
         run: |
-          pacman -Sy --noconfirm git wget awk grep diffutils syslinux python rust ruby go dotnet-sdk python-yaml pacman-contrib shellcheck trivy
+          pacman -Sy --noconfirm git wget awk grep diffutils syslinux python rust ruby go dotnet-sdk python-yaml pacman-contrib shellcheck trivy mktorrent
 
       - name: Validate PyYAML Installation
         run: |
@@ -231,6 +232,7 @@ jobs:
             wget \
             jq \
             squashfs-tools \
+            mktorrent \
             grub \
             syslinux \
             rust \
@@ -476,6 +478,29 @@ jobs:
           echo "Release body:"
           cat release-body.md
 
+      # build.sh already wrote a plain torrent (DHT + default public trackers)
+      # next to the ISO. Re-generate it now that the release tag is known, with
+      # the SourceForge download URLs added as web seeds: the torrent then keeps
+      # working even with zero swarm peers, because clients fall back to plain
+      # HTTP download from SourceForge. The re-run must produce byte-identical
+      # info hashes — same image, same piece boundaries — only the seed/tracker
+      # metadata around them changes.
+      - name: Generate release torrent
+        if: contains(fromJSON('["refs/heads/main","refs/heads/testing"]'), github.ref)
+        env:
+          SOURCEFORGE_PROJECT: ${{ secrets.SOURCEFORGE_PROJECT }}
+          NEOS_RELEASE_TAG: ${{ steps.tag.outputs.value }}
+          NEOS_RELEASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          cd "$GITHUB_WORKSPACE"
+
+          chmod +x tools/gen-torrent.sh
+          ./tools/gen-torrent.sh
+
+          ls -lh out/
+
       - name: Create GitHub Release (small assets)
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         if: contains(fromJSON('["refs/heads/main","refs/heads/testing"]'), github.ref)
@@ -489,6 +514,7 @@ jobs:
             out/SHA256SUMS
             out/SHA512SUMS
             out/vm/*
+            out/*.torrent
 
       - name: Upload Release Assets to SourceForge
         if: contains(fromJSON('["refs/heads/main","refs/heads/testing"]'), github.ref)
@@ -516,6 +542,9 @@ jobs:
           cp out/*.iso "$LOCAL_TARGET"/ || true
           cp out/SHA256SUMS "$LOCAL_TARGET"/ || true
           cp out/SHA512SUMS "$LOCAL_TARGET"/ || true
+          # The torrent goes next to the ISO it points at, so SourceForge
+          # visitors can grab both from the same directory listing.
+          cp out/*.torrent "$LOCAL_TARGET"/ || true
           if [ -d "out/vm" ]; then
             cp -r out/vm "$LOCAL_TARGET"/
           fi
