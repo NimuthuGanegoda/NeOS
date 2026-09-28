@@ -365,15 +365,16 @@ jobs:
           if (( rc != 0 )); then
             # Actions log-zip downloads fail for this repo; put the failure
             # output into the step summary and annotations, which the checks
-            # API can always read. TEMPORARY debug aid — revert once the
-            # log-zip endpoint works again.
+            # API can always read, and upload the full log as a workflow
+            # artifact. TEMPORARY debug aid — revert once log downloads work.
             {
-              echo "### build.sh failure tail"
+              echo "### build.sh failure (exit $rc)"
+              echo
               echo '```'
-              sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -v '^[[:space:]]*$' | tail -80
+              sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -v '^[[:space:]]*$' | tail -100
               echo '```'
             } > "${GITHUB_STEP_SUMMARY:-/tmp/no-summary.txt}" || true
-            sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -iE "^error:|failed (retrieving|to synchronize|to commit|to init)|invalid or corrupted" | head -6 | while IFS= read -r line; do
+            sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -iE "^error:|failed (retrieving|to synchronize|to commit|to init)|invalid or corrupted|CRITICAL" | head -6 | while IFS= read -r line; do
               echo "::error::${line:0:350}"
             done
             sed 's/\x1b\[[0-9;]*m//g' /tmp/build-sh.log | grep -v '^[[:space:]]*$' | tail -25 | head -12 | while IFS= read -r line; do
@@ -381,6 +382,17 @@ jobs:
             done
             exit "$rc"
           fi
+
+      # Debug companion: the checks-API channel above can come up empty when
+      # build.sh dies before writing anything; the artifact always carries the
+      # full log. TEMPORARY — remove with the step above.
+      - name: Upload build log (debug)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-sh-log
+          path: /tmp/build-sh.log
+          if-no-files-found: ignore
 
       - name: Combine ISO parts if split
         run: |
