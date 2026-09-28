@@ -70,7 +70,7 @@ NeOS uses a focused tooling ecosystem for build automation, validation, and deve
 | **C# (.NET 8)** | [`tools/NeosDiagnostics/`](tools/NeosDiagnostics/) | Enterprise compliance inspector for kernel sysctl and Btrfs security rules. |
 | **Ruby** | [`tools/neos_tasks.rb`](tools/neos_tasks.rb) / [`Rakefile`](Rakefile) | Task runner for manifest generation and CI pipeline orchestration. |
 | **Python** | [`tools/gen-bootlogo-frames.py`](tools/gen-bootlogo-frames.py) | Asset pipeline and visual branding frame synthesis. |
-| **Shell / Bash** | [`build.sh`](build.sh) & `profile/airootfs/` | Low-level POSIX runtime hooks, installer execution, and system initialization. |
+| **Shell / Bash** | [`build.sh`](build.sh), `tools/gen-*.sh` & `profile/airootfs/` | Low-level POSIX runtime hooks, installer execution, artifact generation (offline repo, VM appliance, release torrent), and system initialization. |
 
 ---
 
@@ -103,6 +103,7 @@ Comprehensive documentation is available in the `docs/` directory:
 ## Quick Start
 
 1.  **Download the ISO:** Head to the **[Releases](https://github.com/uthsarad/NeOS/releases)** section and download the latest `neos-*-x86_64.iso`.
+    *Prefer BitTorrent?* GitHub attaches a `.torrent` for the image to every release (also mirrored next to the ISO on SourceForge). It web-seeds straight from GitHub's CDN and SourceForge, so it downloads fine even when no other peers are online — and it gets faster as the swarm grows.
 2.  **Flash to USB:** Use Ventoy, Rufus, or BalenaEtcher.
 3.  **Boot & Try:** Boot the USB to explore the live KDE Plasma desktop.
 4.  **Install:** Launch **Install NeOS** and follow the curated Calamares installation wizard.
@@ -113,7 +114,7 @@ Comprehensive documentation is available in the `docs/` directory:
 
 ## Local Build Instructions
 
-To generate a NeOS ISO locally, ensure `archiso` is installed and execute the build script from the repository root:
+To generate a NeOS ISO locally, ensure `archiso` **and `mktorrent`** are installed and execute the build script from the repository root:
 
 ```bash
 sudo ./build.sh                 # full build, including the offline install repo
@@ -124,6 +125,11 @@ sudo ./build.sh --ci            # non-interactive (never prompts about a stale w
 `build.sh` is the single build entrypoint: CI runs the same script (with
 `--ci --no-offline-repo`), so the image you build locally is produced by the same
 code path as the published one.
+
+Every build finishes by running `tools/gen-torrent.sh`, which writes a
+`<iso-name>.torrent` next to the image in `out/` (DHT + a default public
+tracker list). Release builds re-generate it in CI with web seeds for the
+GitHub release asset and the SourceForge download URLs before publishing.
 
 ---
 
