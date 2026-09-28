@@ -39,14 +39,18 @@ sed -i "s|/etc/pacman.d/neos-mirrorlist|$MIRRORLIST_PATH|g" "$BUILD_CONF"
 sed -i "s|/etc/pacman.d/chaotic-mirrorlist|$CHAOTIC_MIRRORLIST_PATH|g" "$BUILD_CONF"
 
 # Retry transfers instead of aborting the sync on a transient 5xx (see header
-# comment). Full re-download per retry (no -C -): resuming against the CDN
-# after a 503 would just re-enter the same error path on the .db files.
+# comment). curl's --retry already covers transient errors (timeout, HTTP 408/
+# 429/500/502/503/504) without --retry-all-errors — and deliberately NOT
+# setting that flag makes a 404 (package rolled on the CDN between the db sync
+# and the file fetch) fail the transfer immediately, so pacman fails over to
+# the next mirror at once instead of burning 8 retries on a URL that will
+# never serve the old version again.
 awk '
     /^\[options\]$/ && !done {
         print
         print "# Injected by tools/gen-build-conf.sh: curl retries absorb transient CDN 5xx"
         print "# (e.g. cdn-mirror.chaotic.cx 503s) that would otherwise abort the whole sync."
-        print "XferCommand = /usr/bin/curl -L --fail --silent --show-error --retry 8 --retry-delay 3 --retry-all-errors -o %o %u"
+        print "XferCommand = /usr/bin/curl -L --fail --silent --show-error --retry 6 --retry-delay 3 --connect-timeout 15 -o %o %u"
         done = 1
         next
     }
