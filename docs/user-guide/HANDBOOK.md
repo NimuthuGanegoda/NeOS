@@ -40,6 +40,8 @@ Unlike a standard Arch Linux installation which is "Do It Yourself" (DIY), NeOS 
 ### 1. Download the ISO
 Grab the latest release from our [Releases page](https://github.com/uthsarad/NeOS/releases).
 
+**BitTorrent option:** each release also publishes a `.torrent` for the ISO (attached to the GitHub release and mirrored next to the image on SourceForge). Load it into any BitTorrent client — it web-seeds from GitHub's CDN and SourceForge, so it works even with no peers online, and it self-verifies: a completed download always matches the checksums in `SHA256SUMS`.
+
 ### 2. Create Bootable Media
 Flash the ISO to your USB drive using a tool like:
 *   **Ventoy** (Recommended): Drag and drop the ISO file onto the drive.

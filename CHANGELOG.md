@@ -4,136 +4,34 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **ISO build no longer dies on transient CDN 5xx** (`tools/gen-build-conf.sh`):
+  `mkarchiso`'s package sync aborted wholesale when `cdn-mirror.chaotic.cx`
+  answered `chaotic-aur.db` with a 503 — pacman does not fail over to the next
+  `Server` entry on 5xx, so one CDN blip killed the build within seconds. The
+  generated `pacman-build.conf` now injects a curl `XferCommand` with
+  `--retry 8 --retry-all-errors`, absorbing the blips per URL and only then
+  falling through to the geo mirror.
+
 ### Added
-- Go regression coverage for `neosctl` mirror parsing and concurrent mirror benchmarking.
+- **Automatic `.torrent` release artifact** (`tools/gen-torrent.sh`): every
+  build now ships a BitTorrent metainfo next to the ISO. `build.sh` generates
+  one at the end of each build (DHT + a default public tracker list,
+  size-matched piece size so the metainfo stays small); CI re-runs the
+  generator after the release-tag step with web seeds for the GitHub release
+  asset (GitHub's CDN — no secrets required) and the SourceForge download
+  URLs, so the torrent keeps downloading even with zero swarm peers (clients
+  fall back to plain HTTP). The `.torrent` is attached to the GitHub Release
+  and mirrored next to the ISO on SourceForge. Behavior is gated by the new
+  `tests/verify_torrent.sh` (bencode-level checks: newest-by-mtime ISO
+  selection, tracker override/DHT-only modes, web seeds, private flag, piece
+  size, regeneration overwrite).
+- Go regression coverage for `neosctl` mirror parsing and concurrent mirror
+  benchmarking.
 - Calamares module configuration integrity checks in the Rust profile auditor.
-- Comprehensive Python unit test suite in `tests/test_live_scripts.py` covering live mode detection, dynamic version extraction, and Calamares pacstrap job progress regexes.
-
-## [2026.11.14] - 2026-11-14
-
-### Fixed
-- VMs with an unbound VMware VGA adapter and no DRM device can now start the X11 login manager through Xorg's VESA fallback. Previously logind reported no graphical seat, so SDDM waited without starting Xorg. After a bounded udev settle, NeOS adds a runtime-only seat rule for that exact unbound virtual adapter; systems with a bound graphics driver or a DRM device retain normal detection.
-- The live desktop boot probe no longer waits for unrelated jobs behind `graphical.target`, such as network time synchronization. It reports readiness when SDDM and an active graphical live-user desktop are running, while still rejecting failed login managers, text consoles and missing desktop processes.
-- Session selection now updates conflicting display-server settings in `/etc/sddm.conf`, whose values override SDDM's drop-ins. A VM selected for X11 can no longer remain on Wayland because of a primary configuration override. Updates respect INI sections and preserve authentication settings and unrelated session keys.
-
-## [2026.11.01] - 2026-11-01
-
-### Fixed
-- Assisted installation now generates valid keyboard, locale, and password configuration, retains cidata mount records for cleanup, and restricts access to generated credentials.
-- Linux overlay and script files use LF checkouts on Windows as well as Linux.
-- Automatic integration merges wait for successful CI, pin the validated head commit, and respect branch protections.
-- Workflow scanning now works in isolated snapshots without losing regex escapes; mirror connectivity and interactive Bash probes avoid false skips and hangs.
-
-### Added
-- Reusable audit runner with per-check logs, machine-readable results, timeouts, strict tool validation, and regression coverage for generated installer configuration and mount cleanup.
-
-## [2026.10.17] - 2026-10-17
-
-### Fixed
-- Restored compatibility with Arch's Plasma 6.8 packages by replacing the removed `plasma-x11-session` with an Xfce X11 fallback. Plasma Wayland remains the default on supported GPUs; VMs, Safe Graphics and other drivers use Xfce. Updated installer defaults, session migration, accessibility/autoinstall startup and documentation together.
-- Live VM setup no longer deletes the Plasma Wayland session, so an explicit Wayland override remains usable.
-- Update notifications now pass icon and urgency options before the argument separator, so `notify-send` accepts the title and message.
-- The installer now retries connectivity after an unsuccessful initial probe, allowing a delayed network connection to recover before selecting offline installation or reporting failure. An already successful probe no longer triggers a redundant check.
-- Added runtime regression checks for notification arguments and delayed, unavailable, and already connected installer networks.
-
-### Changed
-- **Empty pull requests are closed instead of merged into `testing`.** Jules opened a daily "Acknowledge Architect persona directives" PR that changed no files; each was auto-merged and set off a full ISO build and release. The auto-merge workflow now closes any PR into `testing` with no changed files, with a one-line note (`tests/verify_auto_merge.sh` checks this happens before any merge).
-
-## [2026.10.03] - 2026-10-03
-
-Polish release: a clean, professional image from the boot menu to the installed desktop.
-Every user-visible surface was walked and checked against what the image actually ships;
-the plan is `reports/v2026.10.03/00-polish-plan.md`, the outcome and before/after renders
-are in `reports/v2026.10.03/02-review-report.md` and `reports/v2026.10.03/screenshots/`.
-
-### Website alignment
-The OS, README and docs were checked claim by claim against the project website
-(`uthsarad/NeOSweb`); the findings, including the claims the website should change,
-are in `reports/v2026.10.03/website-alignment.md`.
-
-- **Rollback now works.** The Operations Hub's rollback ran `snapper rollback`, which switches the Btrfs *default* subvolume — but NeOS mounts its root by name (`subvol=/@` in fstab and on the kernel command line), so the machine rebooted into the same system and nothing changed. The new `neos-rollback <number>` keeps the current root as `@.pre-rollback-<date>` and makes a writable copy of the snapshot the new `@`; the Hub uses it. `tests/verify_rollback.sh` exercises the restore, refusal and failure paths.
-- **Snapshots are bootable from the GRUB menu** on installed systems, as the manual promises: `grub-btrfs` is installed, `grub-btrfsd` keeps a **NeOS snapshots** submenu current, and a `grub-btrfs-overlayfs` initramfs hook gives a booted read-only snapshot a temporary writable layer so it reaches the desktop. TROUBLESHOOTING documents both recovery paths.
-- **Installed systems now get NeOS's GRUB settings.** Calamares' `grubcfg` ran with `overwrite: true` and no defaults, so it replaced the shipped `/etc/default/grub` with three lines: no boot-menu theme, no NeOS kernel parameters, and os-prober silently off (GRUB 2.06+ needs `GRUB_DISABLE_OS_PROBER=false`), so **Windows was missing from the boot menu on dual-boot installs**. It now edits the file in place; the timeout is 3 s so the menu and the snapshot submenu can be reached when recovering. Guarded by `verify_grub_config.sh`.
-- **Wayland by default, with an automatic X11 fallback** (maintainer's decision). The new `neos-session-select.service` picks the session before SDDM starts, on the live image and installed systems: Plasma on Wayland (with a Wayland login screen on `kwin_wayland`) for Intel, AMD and proprietary NVIDIA graphics; X11 in virtual machines (KWin on Wayland stops servicing input on software rendering), with `nomodeset` / Safe Graphics (no KMS device) and on other drivers such as nouveau, where the live session used to hang. Override with `SESSION=` in `/etc/neos/session.conf` or `neos.session=` on the kernel command line; a session picked on the login screen is remembered. The static SDDM files stay on X11 as the safe floor if the service does not run. `neos-display-sync` steps aside on Wayland, where KWin handles rotation and scaling itself. Covered by `tests/verify_session_select.sh` (13 hardware/override cases).
-- **The Screen Reader boot entry now makes the desktop speak.** It only started espeakup, which speaks the text consoles, so a blind user arrived at a silent Plasma desktop although Orca was installed. `neos-accessibility --session` (autostarted in the Plasma session) now turns on Plasma's screen-reader setting and starts Orca when the system was booted with `accessibility=on`; on any other boot it does nothing. **The installer is read aloud too:** Calamares runs as root, and the user's accessibility bus turned root away, so on a screen reader boot root is allowed onto that bus and `neos-welcome` hands Calamares its address (`AT_SPI_BUS_ADDRESS`, Qt accessibility forced on). **And the installed system keeps speaking:** an install from a screen reader boot writes a system-wide `/etc/xdg/kaccessrc` (Orca on for every user, switchable per user) and enables espeakup. Covered by `tests/verify_accessibility.sh`.
-- **Installer slideshow without overclaims:** "Snapshot-Gated Stability … No more broken updates" is now "Updates You Can Undo" (snapshots before and after every update, roll back from the boot menu); "optimized I/O scheduling", which NeOS does not do, is replaced by its real disk-write tuning; drivers are described as preinstalled.
-- **Release naming matches the website.** `os-release` reads `PRETTY_NAME="NeOS 2026.10 (Beta)"`; CI inserts the build codename (e.g. `NeOS 2026.10 (Marlin Beta)`) and sets `VERSION_CODENAME`, and stamps the same name into the installer's window and welcome page.
-- **The Operations Hub no longer claims a "Stable" channel fed by staging deployments**; it says what is true: the Beta channel, straight from the Arch repositories, protected by snapshots.
-- **README rewritten for the public:** the website's positioning, an accurate feature list (network install for published ISOs, the real tools), requirements and verification steps. Removed: credits for projects and personas the OS does not use (ALCI, NeoCortex, "Sovereign Core", an AI persona), "Zen kernels" (NeOS ships `linux-lts`) and a named QA lead.
-- **ARCHITECTURE.md separates what ships from what is planned:** the NeOS curated/staging/stable repositories and the promotion pipeline do not exist yet and are now labelled as the target design; the core-app list matches the image (Firefox, not Brave; no Thunderbird or nomacs).
-
-### Fixed
-- **The installer's progress bar stalled for the whole package download** (uthsarad/NeOS#980). Without a terminal, pacman 6/7 print `<file> downloading...`, but the Calamares pacstrap job only recognised the older `downloading <file>...` form, so it counted no downloads; the total-packages regex also missed pacman's `Packages (N)` summary and stayed at a hard-coded 178. Both parsers are fixed, database refreshes no longer count as packages, and the job's status text lost its emoji. The new `tests/verify_installer_progress.sh` feeds the real module pacman output in the CI log's format.
-- **The installer slideshow never left its first slide.** `showSlide()` mutated a QML `var` array in place, which does not notify bindings, so "Welcome to NeOS" stayed up for the whole install. It now assigns a new array; `tests/verify_ui_render.sh` renders every slide and fails if their content does not differ.
-- **The welcome app's feature cards rendered empty and its buttons overflowed the window** (the card's `QFrame` style cascaded onto its labels; three 220 px buttons did not fit 860 px). Layout rebuilt; focus starts on the primary action.
-- **Every user's app menu showed 16 dead launchers** (Basecamp, HEY, X, WhatsApp, Docker, Zoom, …): their commands (`neos-launch-webapp`, `xdg-terminal-exec`, `foot`, `imv`, `mpv`, `dua`) were never shipped. Removed with their 39 icons; `tests/verify_desktop_entries.sh` requires every `.desktop` command to resolve.
-- **KDE's About page showed a generic logo:** `os-release` named `LOGO=neos-logo`, but no such icon existed. The logo now ships as a full `neos-logo` icon set (PNG sizes plus a scalable SVG).
-- **Unreadable buttons:** white text on the `#38bdf8` accent is 2.1:1 (WCAG AA needs 4.5:1). It was used on the installer's Next button, current step, selected tab and menu item, the welcome app's primary button and the login button. All now use the dark `onAccent` text (9:1).
-
-### Changed
-- **Boot splash:** the NeOS logo with three pulsing accent dots and a clean disk-unlock prompt replaces the cartoon-cat loader (maintainer's decision). The cat frames and their generator are removed.
-- **One brand palette:** accent `#38bdf8`, hover `#7dd3fc`, pressed `#0ea5e9`, `onAccent` `#0A0E1A` (`tools/palette.json`). Three files had defined three different hover/pressed pairs, and the old `#1F6FD6` lingered as tints. The installer, slideshow, login screen, welcome app, KDE colour scheme and `os-release` now agree, and `verify_palette_consistency.sh` rejects retired shades and white-on-accent text.
-- **One logo, the website's:** the image now uses the NeOS website's mark (a hexagon around a dot, from `uthsarad/NeOSweb`), kept as `tools/brand/neos-logo.svg` and rendered to every size by `tools/gen-logo.py --all`. It replaces the generated "N" badge and the old blue/white swirl.
-- **Brand images regenerated:** new installer welcome banner (the old one was AI swirl clip-art still carrying an image generator's watermark); BIOS boot-menu background on the night-sky theme (it was a Gothic cathedral); the login theme preview is a real headless render (`tools/render-sddm-preview.py`). The README screenshots are real renders of the current image.
-- **No emoji in shipped UI:** slideshow and welcome-app icons are monochrome glyphs in the accent colour, and the login avatar is a drawn silhouette.
-- **Boot menus:** the default entry reads "Start NeOS" and accessibility reads "NeOS (Screen Reader)" in both menus. GRUB gains UEFI Firmware Settings, Reboot and Power Off.
-- **Cleaner new home directories:** `/etc/skel` keeps only NeOS's own autostart/ksplash settings and the Bluetooth A2DP rule. Gone: configs for 15 applications that are not installed, Omarchy branding and hook samples, GNOME Nautilus extensions, and a personal git/tmux setup that changed git's behaviour (`pull.rebase`, `rerere.autoupdate`).
-- **Leaner installs:** 39 rescue-ISO or dormant-installer packages are removed (`archinstall`, `gum`, `clonezilla`, `drbl`, `irssi`, `lynx`, `mc`, `wvdial`, `refind`, `memtest86+`, …). The installed-system developer block shrinks from ~25 toolchains to `base-devel`, `python-pip`, `nodejs` and `npm`; the HANDBOOK lists one-line installs for the rest (maintainer's decision).
-
-### Merged
-- **`main` merged into `testing`** (83 persona-agent commits since Sep 12; nothing pushed to `main`). Kept from `main`: validated progress-dialog handling, a rollback progress dialog and crash-reporting opt-in in the Operations Hub; `umask 077`, input sanitising and clearer notifications in `neos-autoupdate.sh`; stderr errors, a `zstd` check and a cached key list in `build.sh`; retargeting of bot PRs aimed at `main` to `testing` in the auto-merge workflow. Also ported from the four PR-less Jules branches: `pacman --needed` for the keyring, install hints in dependency errors, and `hkps://` keyserver fetches. Dropped: `main`'s re-added 2 GiB size gate, the placebo telemetry checkbox, and root-level persona report copies.
-
-### Removed
-- **Dormant Omarchy runtime** (maintainer's decision): `usr/share/neos/neos/`, the archinstall-based installer (`usr/share/neos-iso/`, `neos-iso-install`, `neos-install-dashboard`, `neos-cidata-load`, `neos-iso-cleanup-disk`, `neos-install-diagnose-media`), `neos-debug*`, `neos-upload-log` and `profile/packages_omarchy.x86_64`. They could not run on NeOS and were copied onto every install. Restore steps are in `docs/architecture/OMARCHY_INTEGRATION.md`.
-- **`graphify-out/`** (a 600 KB generated knowledge graph, committed on 2026-09-18): nothing used it, it could not be regenerated here, and it described a file tree that no longer exists. Its `graph.html` was most of the repository's HTML, which is why GitHub's language bar showed so much of it. The directory is now ignored, and the remaining design-reference HTML is marked as documentation for GitHub's language statistics.
-- **Installer log upload:** Calamares sent the full installer log (hostname, user name, disk layout) to a public pastebin over plain HTTP. The log stays local; TROUBLESHOOTING says where it is.
-- **The "send anonymous usage data" checkbox** in the welcome app: nothing ever collected or sent data.
-
-### Tests and tooling
-- New: `verify_accessibility.sh`, `verify_session_select.sh`, `verify_rollback.sh`, `verify_desktop_entries.sh`, `verify_package_hygiene.sh`, and `verify_ui_render.sh` (headless renders of the login theme, slideshow and welcome app; CI installs `python-pyqt6` + `qt6-declarative`).
-- `verify_palette_consistency.sh` and `verify_boot_gui.sh` are extended. `verify_installer_secrets.sh` is retired along with the installer it covered.
-- New generators: `tools/gen-brand-images.py`, `tools/render-sddm-preview.py`, `tools/render-installer-slides.py`. `tools/gen-logo.py --all` renders every logo copy from `tools/brand/neos-logo.svg`.
-- Version bumped to `2026.10.03`.
-
-## [2026.10.02] - 2026-10-02
-
-Review-and-repair release. It documents the 18 commits that landed after the
-2026.09.23 metadata sync without a CHANGELOG entry, then fixes what a full-tree
-review found in them. The plan with evidence for every item is
-`reports/v2026.10.02/00-improvement-plan.md`; the outcome is
-`reports/v2026.10.02/02-review-report.md`.
-
-### Previously undocumented (2026-09-24 – 2026-10-01)
-- **Omarchy integration** (`d12ce33`, `92b9d29`, `823c3d0`): Omarchy's user configs (Hyprland, terminals, tmux, btop, starship, web-app launchers and icons), its defaults tree (`usr/share/neos/neos/`), its archinstall-based install orchestrator (`usr/share/neos-iso/`, `neos-iso-install`, `neos-install-dashboard`, `neos-cidata-load`, `neos-debug`), and the Arch `releng` live package set and boot services. All of it was rebranded to NeOS by find-and-replace. `profile/packages.x86_64` grew from ~210 to ~610 entries and was re-sorted. What is wired up and what is dormant is documented in `docs/architecture/OMARCHY_INTEGRATION.md`.
-- **BitTorrent publishing** (`30e6b4b`, `4445a71`, `e0ab00c`, `477ce39`): `tools/gen-torrent.sh` (public trackers + SourceForge web seed) and `tests/verify_torrent.sh`. Releases attach the `.torrent`, and the release notes gain direct-download and torrent links.
-- **Package fixes** (`4445a71`, `6a87be7`): Omarchy-only packages (`omarchy-keyring`, `omarchy-settings`, `linux-t2`, `ttfx`, `tzupdate`) removed, `libva-mesa-driver` (now part of `mesa`) and `xf86-video-vmware` removed, and `virtualbox-guest-utils-nox` dropped in favour of `virtualbox-guest-utils`, with which it conflicts.
-- **Branding** (`6abd77b`, `823c3d0`): the accent colour moved from `#1F6FD6` to `#38bdf8` (palette, welcome app, Calamares SVGs/QSS, SDDM, Plymouth), and there is a new starfield wallpaper.
-- **CI/test fixes**: workflow YAML repairs (`45dd228`, `477ce39`), ShellCheck findings in `neos-install-dashboard` (`e0ab00c`), and a SIGPIPE in `verify_install_repo.sh` under `pipefail` (`13e99b7`). `e9bcfdb` ("docs: palette notes") actually regenerated both Calamares manifests.
-- **CodeQL autofix on the installer** (`f8738a8`, `2273312`, `ad9936b`): see the first entry under Security below. It traded a clear-text finding for silently unencrypted installs.
-
-### Fixed
-- **The ISO build failed at package installation** ("conflicting files", `build` job on uthsarad/NeOS#1068). mkarchiso copies the overlay into the root before pacstrap, and the Omarchy import had captured eight files that packages also ship: `hicolor/index.theme`, `/etc/skel/.screenrc` (`screen`), `/etc/skel/.zshrc` (`grml-zsh-config`, which installs the same grml skeleton itself), and the `lftp`, `ModemManager` and `gvim` icons. They are removed. `verify_airootfs_structure.sh` rejects them, and where a pacman files database is present it also asks pacman about every overlay file.
-
-### Security
-- **Encrypted deferred-provisioning installs no longer silently lose encryption, and no passphrase is written to disk.** The autofix stripped `encryption_password` from the credentials file the orchestrator hands archinstall. archinstall reads the passphrase only from that top-level key and drops `DiskEncryption` when it is missing (archinstall 4.5 `args.py` / `device.py`), so those installs would have come out unencrypted. Meanwhile the passphrase was still written in clear text, mode 0644, to `archinstall-user_configuration.json`. Both state files are now secret-free and created `0600` inside a `0700` directory. The passphrase is carried in memory (`InstallContext.archinstall_secrets`, kept out of `repr()`) and injected into archinstall's parsed config by `archinstall_adapter`. The LUKS key files and the Tailscale auth key are created `0600` atomically instead of being written and then `chmod`-ed. Guarded by the new `tests/verify_installer_secrets.sh` (CodeQL alert 3).
-- **Fork pull requests are no longer auto-merged into `testing`.** Every push to `testing` publishes a release, so `jules-auto-merge.yml` had let anyone with a GitHub account ship code in a NeOS release. Same-repository PRs still auto-merge (with `--admin`). Fork PRs get a comment and wait for a maintainer, or for a deliberate manual run of the workflow.
-- **`build-iso.yml` script injection fixed**: `${{ github.head_ref }}`, a branch name an attacker controls on a fork PR, was expanded directly into a shell script. It now goes through `env:`. The duplicated branch-suffix block and the unused `VERSION` (SC2034) are gone, and the SourceForge key is written under `umask 077`. New `tests/verify_workflow_security.sh` rejects untrusted `${{ }}` expansions in any `run:` block and runs `actionlint` when it is installed.
-- **Live session: removed the releng units that conflicted with NeOS.** These were root autologin on tty1, `sshd`, and `systemd-networkd` with its socket and wait-online. NetworkManager owns networking, and networkd-wait-online held `network-online.target` until its timeout on every boot. Also removed: `cloud-init` (its NoCloud datasource reads the same `cidata` label as NeOS's autoinstall and would have applied that volume's `user-data`), and the `livecd-talk`/`livecd-alsa-unmuter`/`choose-mirror` units, which call binaries that do not exist. `livecd-talk` switched the accessibility boot entry to VT13 and then failed before switching back. New `tests/verify_live_services.sh` guards all of this and checks that every `/usr/local/bin` `Exec*` target of a shipped unit exists.
-
-### Changed
-- Release-codename step: `claude-opus-5` → `claude-opus-5-5`, `max_tokens` 300 → 1024 (Opus 5.5 always thinks, and thinking counts toward the limit), and server-side refusal fallback enabled. The static fish list still covers any failure. The torrent step now picks the newest ISO by mtime, like the upload step (M5).
-- `build.sh` now changes to the repository root itself, so `sudo /path/to/NeOS/build.sh` works from any directory.
-- `profile/packages.x86_64` is strictly sorted under a header that says so. Its 12 section headings no longer matched their packages after the merge's re-sort, so they were removed. `profile/pacman.conf` lost its false "Size optimization" comment (M11).
-- `tools/gen-wallpaper.py` is now the generator of the shipped starfield wallpaper (verified pixel-identical; formerly `gen_wp.py` at the repo root), with `tools/wallpaper-reference.html` as its design reference.
-
-### Removed
-- `rename_omarchy.sh` and `replace_text.sh`: one-shot migration scripts. Re-running `replace_text.sh` would `sed -i` the whole overlay again.
-- `etc/skel/.config/neos/omarchy/` and `etc/skel/.local/state/neos/omarchy/`: byte-identical copies left inside every new user's home by the rebrand. `verify_airootfs_structure.sh` now rejects omarchy-named overlay paths.
-
-### Tests
-- New: `verify_installer_secrets.sh`, `verify_live_services.sh`, `verify_workflow_security.sh`.
-- `verify_auto_merge.sh` requires the fork refusal to come before any merge attempt. `verify_version_stamp.sh` now also checks the Go/Ruby/.NET version constants and requires a CHANGELOG section for `VERSION`.
-- Version bumped to `2026.10.02` (`VERSION`, os-release, Go/Ruby/.NET literals).
+- Comprehensive Python unit test suite in `tests/test_live_scripts.py` covering
+  live mode detection, dynamic version extraction, and Calamares pacstrap job
+  progress regexes.
 
 ## [2026.09.23] - 2026-09-23
 
@@ -314,7 +212,7 @@ was found; the items below are what changed. Open items are listed at the end.
 
 ### Added
 - **Deep repository & build audit** (`reports/v2026.07.03/deep-audit-report.md`): full audit of the archiso profile, build scripts, airootfs overlay, Calamares config, CI workflow, tests, and tooling, judged against the ArchWiki Archiso article and Ubuntu LiveCDCustomization image-hygiene practices. 3 High / 7 Medium / 6 Low findings with file:line evidence, an ArchWiki+Ubuntu compliance matrix, and a 14-item fix backlog. Headline findings: dormant kiosk installer path that could re-impose passwordless login on installed systems if re-enabled; CI gates weakened with `|| true`; `neos-secureboot-setup` never copied to installed systems; dead i686/aarch64 package lists enforced by the Rust profile audit.
-- `tools/gen-build-conf.sh` and `tools/gen-manifests.sh`: single source of truth for the build pacman.conf and the Calamares netinstall manifests, now called by both `build.sh` and CI. **Fixes a High-severity issue found during remediation: CI never regenerated `neos-packages.txt`/`neos-overlay.txt`, so systems installed from CI-built ISOs silently missed every overlay file added after the last committed manifest** (including `neos-secureboot-setup`, the snapshot pacman hooks, and the Plymouth logo).
+- `tools/gen-build-conf.sh` and `tools/gen-manifests.sh`: single source of truth for the build pacman.conf and the Calamares netinstall manifests, now called by both `build.sh` and CI. **Fixes a High-severity bug found during remediation: CI never regenerated `neos-packages.txt`/`neos-overlay.txt`, so systems installed from CI-built ISOs silently missed every overlay file added after the last committed manifest** (including `neos-secureboot-setup`, the snapshot pacman hooks, and the Plymouth logo).
 - `profile/airootfs/etc/mkinitcpio.d/linux-lts.preset` (ArchWiki pattern): builds only the archiso initramfs image, skipping the redundant fallback image (smaller ISO, faster build). Live-only — excluded from the installed-system overlay.
 - CI releases now ship `SHA256SUMS` alongside the ISO.
 - Regression test: `neos-liveuser-setup.service` must stay unsandboxed (sandboxing it silently breaks live autologin); the check ignores comments and fails if any `ProtectSystem`/`ProtectHome`/`PrivateTmp`/`NoNewPrivileges` directive reappears.
